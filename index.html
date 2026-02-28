@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<link rel="icon" type="image/x-icon" href="Java_Cheatsheet.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java DSA Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   THEME VARIABLES
+═══════════════════════════════════════════════ */
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --card: #16161f;
+  --card-hover: #1c1c28;
+  --border: #2a2a3a;
+  --border-light: #363650;
+  --accent: #7c6af7;
+  --accent2: #38d9a9;
+  --accent3: #f7c948;
+  --accent4: #f76b48;
+  --text: #e8e8f0;
+  --text-dim: #a0a0c0;
+  --muted: #6060a0;
+  --code-bg: #0d0d15;
+  --header-bg: rgba(10,10,15,0.95);
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+[data-theme="light"] {
+  --bg: #f4f4f9;
+  --surface: #eaeaf4;
+  --card: #ffffff;
+  --card-hover: #f8f8ff;
+  --border: #d0d0e8;
+  --border-light: #b8b8d8;
+  --accent: #5b4de0;
+  --accent2: #1aaa80;
+  --accent3: #c8a000;
+  --accent4: #d04020;
+  --text: #1a1a2e;
+  --text-dim: #4a4a70;
+  --muted: #8080b0;
+  --code-bg: #f0f0fa;
+  --header-bg: rgba(244,244,249,0.95);
+  --shadow: 0 4px 24px rgba(0,0,0,0.1);
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(124,106,247,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,106,247,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events:none; z-index:0;
+  transition: opacity 0.3s;
+}
+[data-theme="light"] body::before { opacity: 0.5; }
+
+/* ═══════════════════════════════════════════════
+   STICKY TOPBAR
+═══════════════════════════════════════════════ */
+.topbar {
+  position: sticky; top:0; z-index:100;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 54px;
+}
+.topbar-logo {
+  font-size: 15px; font-weight: 800;
+  background: linear-gradient(135deg, var(--text) 40%, var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  white-space: nowrap;
+}
+.topbar-search {
+  flex:1; max-width: 420px;
+  position: relative;
+}
+.topbar-search input {
+  width:100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 14px 7px 36px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline:none;
+  transition: border-color 0.2s;
+}
+.topbar-search input:focus { border-color: var(--accent); }
+.topbar-search input::placeholder { color: var(--muted); }
+.topbar-search .si {
+  position:absolute; left:10px; top:50%; transform:translateY(-50%);
+  color:var(--muted); font-size:16px; pointer-events:none;
+}
+.topbar-right { margin-left:auto; display:flex; gap:8px; align-items:center; }
+
+.icon-btn {
+  width:34px; height:34px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius:6px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:var(--text-dim);
+  font-size:16px;
+  transition: all 0.15s;
+  position:relative;
+}
+.icon-btn:hover { border-color:var(--accent); color:var(--accent); }
+.icon-btn .badge {
+  position:absolute; top:-5px; right:-5px;
+  background:var(--accent); color:#fff;
+  font-size:9px; font-family:'JetBrains Mono',monospace;
+  border-radius:10px; padding:1px 5px;
+  min-width:16px; text-align:center;
+  display:none;
+}
+.icon-btn .badge.show { display:block; }
+.mode-btn { font-size:18px; }
+
+/* User pill in topbar */
+.user-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(124,106,247,0.1);
+  border: 1px solid rgba(124,106,247,0.3);
+  border-radius: 20px;
+  padding: 4px 12px 4px 6px;
+  font-size: 12px; color: var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  cursor: default;
+}
+.user-pill .avatar {
+  width: 22px; height: 22px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; color: #fff; font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════
+   MAIN LAYOUT
+═══════════════════════════════════════════════ */
+.layout { display:flex; position:relative; z-index:1; }
+
+/* Sidebar */
+.sidebar {
+  width: 210px; flex-shrink:0;
+  position: sticky; top:54px;
+  height: calc(100vh - 54px);
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  padding: 20px 12px;
+  background: var(--surface);
+}
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+.sidebar-section { margin-bottom: 24px; }
+.sidebar-label {
+  font-size:9px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--muted); font-family:'JetBrains Mono',monospace;
+  padding: 0 8px 8px;
+}
+.nav-btn {
+  display:flex; align-items:center; gap:8px;
+  width:100%; padding: 8px 10px;
+  background:transparent; border:none;
+  border-radius:6px; color:var(--text-dim);
+  font-family:'Syne',sans-serif; font-size:13px;
+  cursor:pointer; text-align:left;
+  transition: all 0.15s;
+}
+.nav-btn:hover { background:var(--card); color:var(--text); }
+.nav-btn.active { background:rgba(124,106,247,0.15); color:var(--accent); }
+.nav-btn .dot {
+  width:6px; height:6px; border-radius:50%;
+  flex-shrink:0;
+}
+.nav-btn .cnt {
+  margin-left:auto;
+  font-size:10px; font-family:'JetBrains Mono',monospace;
+  color:var(--muted);
+}
+.nav-btn .lock-icon {
+  margin-left: auto;
+  font-size: 10px; color: var(--muted);
+  opacity: 0.6;
+}
+
+/* Main content */
+.main { flex:1; min-width:0; padding: 32px 28px; }
+
+/* ═══════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════ */
+.hero {
+  margin-bottom: 40px;
+  padding: 36px 0 32px;
+  border-bottom: 1px solid var(--border);
+}
+.hero-tag {
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  color:var(--accent2); letter-spacing:3px; text-transform:uppercase;
+  border:1px solid rgba(56,217,169,0.3); padding:3px 10px; border-radius:3px;
+  margin-bottom:14px;
+}
+.hero h1 {
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  font-weight:800; line-height:1.1;
+  background: linear-gradient(135deg, var(--text) 40%, var(--accent));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+  margin-bottom:10px;
+}
+.hero p { color:var(--text-dim); font-size:14px; }
+.stats { display:flex; gap:24px; margin-top:20px; flex-wrap:wrap; }
+.stat { display:flex; flex-direction:column; }
+.stat-num {
+  font-size:22px; font-weight:800;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--accent);
+}
+.stat-label { font-size:11px; color:var(--muted); margin-top:2px; }
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+.tabs {
+  display:flex; gap:4px; margin-bottom:28px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+.tab-btn {
+  padding: 8px 18px 10px;
+  background:transparent; border:none;
+  color:var(--muted); font-family:'Syne',sans-serif; font-size:13px; font-weight:600;
+  cursor:pointer; border-bottom:2px solid transparent;
+  margin-bottom:-1px; transition:all 0.15s;
+}
+.tab-btn:hover { color:var(--text); }
+.tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* ═══════════════════════════════════════════════
+   FILTER CHIPS
+═══════════════════════════════════════════════ */
+.filters {
+  display:flex; gap:6px; flex-wrap:wrap; margin-bottom:28px;
+}
+.filter-btn {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:20px; padding:5px 14px;
+  color:var(--text-dim); font-family:'Syne',sans-serif; font-size:12px;
+  cursor:pointer; transition:all 0.15s;
+}
+.filter-btn:hover, .filter-btn.active {
+  background:var(--accent); border-color:var(--accent); color:#fff;
+}
+
+/* ═══════════════════════════════════════════════
+   SECTION & CARDS
+═══════════════════════════════════════════════ */
+.section { margin-bottom:44px; }
+.section-title {
+  font-size:10px; letter-spacing:3px; text-transform:uppercase;
+  color:var(--accent); font-family:'JetBrains Mono',monospace;
+  margin-bottom:14px;
+  display:flex; align-items:center; gap:12px;
+}
+.section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px; }
+
+.card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px; overflow:hidden;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  animation: fadeUp 0.35s ease both;
+  position:relative;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.card:hover {
+  border-color:var(--accent);
+  transform:translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.card.favorited { border-color: var(--accent3); }
+.card.favorited:hover { border-color: var(--accent3); }
+
+.card-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,0.02);
+  gap: 8px;
+}
+.card-title { font-size:13px; font-weight:700; color:var(--text); flex:1; min-width:0; }
+.card-actions { display:flex; gap:4px; align-items:center; flex-shrink:0; }
+
+.card-tag {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  padding:2px 7px; border-radius:4px; font-weight:600; letter-spacing:0.5px;
+}
+.tag-basic   { background:rgba(124,106,247,0.15); color:var(--accent); }
+.tag-array   { background:rgba(247,201,72,0.15);  color:#f7c948; }
+.tag-list    { background:rgba(56,217,169,0.15);  color:#38d9a9; }
+.tag-map     { background:rgba(247,107,72,0.15);  color:#f76b48; }
+.tag-stack   { background:rgba(240,100,200,0.15); color:#f064c8; }
+.tag-tree    { background:rgba(72,170,247,0.15);  color:#48aaf7; }
+.tag-graph   { background:rgba(100,240,150,0.15); color:#64f096; }
+.tag-sort    { background:rgba(247,72,140,0.15);  color:#f7488c; }
+.tag-string  { background:rgba(247,147,72,0.15);  color:#f79348; }
+.tag-bit     { background:rgba(180,100,247,0.15); color:#b464f7; }
+.tag-dp      { background:rgba(72,200,247,0.15);  color:#48c8f7; }
+.tag-custom  { background:rgba(200,200,80,0.15);  color:#c8c850; }
+
+.small-btn {
+  background:transparent; border:none;
+  color:var(--muted); cursor:pointer; font-size:14px;
+  padding:3px 5px; border-radius:4px;
+  transition:all 0.15s; line-height:1;
+}
+.small-btn:hover { background:var(--border); color:var(--text); }
+.small-btn.active-fav { color:var(--accent3); }
+.small-btn.copied { color:var(--accent2); }
+
+code.snippet {
+  display:block;
+  padding:14px 16px;
+  font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.75;
+  background:var(--code-bg); color:#c9d1d9;
+  white-space:pre; overflow-x:auto;
+  transition: background 0.3s;
+}
+[data-theme="light"] code.snippet { color:#24292e; }
+
+/* syntax colors — dark */
+.kw  { color:#ff79c6; }
+.type{ color:#8be9fd; }
+.str { color:#f1fa8c; }
+.num { color:#bd93f9; }
+.fn  { color:#50fa7b; }
+.cls { color:#ffb86c; }
+.cmt { color:#6272a4; font-style:italic; }
+/* syntax colors — light */
+[data-theme="light"] .kw   { color:#d63384; }
+[data-theme="light"] .type { color:#0070c8; }
+[data-theme="light"] .str  { color:#a67c00; }
+[data-theme="light"] .num  { color:#6f42c1; }
+[data-theme="light"] .fn   { color:#116630; }
+[data-theme="light"] .cls  { color:#e06c00; }
+[data-theme="light"] .cmt  { color:#8090b0; }
+
+.card-desc {
+  padding:9px 14px;
+  font-size:12px; color:var(--text-dim); line-height:1.6;
+  border-top:1px solid var(--border);
+}
+.copy-count {
+  font-size:10px; font-family:'JetBrains Mono',monospace;
+  color:var(--muted); padding:0 14px 8px;
+  display:none;
+}
+.copy-count.show { display:block; }
+
+/* ═══════════════════════════════════════════════
+   COMPLEXITY TABLE
+═══════════════════════════════════════════════ */
+.complexity-table {
+  width:100%; border-collapse:collapse;
+  font-family:'JetBrains Mono',monospace; font-size:12.5px;
+}
+.complexity-table th {
+  background:var(--card); color:var(--accent);
+  padding:10px 14px; text-align:left;
+  border-bottom:2px solid var(--border);
+  font-size:11px; letter-spacing:1px; text-transform:uppercase;
+  position:sticky; top:0;
+}
+.complexity-table td {
+  padding:9px 14px;
+  border-bottom:1px solid var(--border);
+  color:var(--text-dim);
+  transition: background 0.15s;
+}
+.complexity-table tr:hover td { background:var(--card); }
+.complexity-table .ds-name { color:var(--text); font-weight:600; }
+.o1  { color:#38d9a9; } .olog { color:#7c6af7; }
+.on  { color:#f7c948; } .onlog { color:#f79348; }
+.on2 { color:#f76b48; } .oinf { color:#f7488c; }
+
+.complexity-group th {
+  background:rgba(124,106,247,0.08);
+  color:var(--accent); font-size:10px; letter-spacing:2px;
+  padding:6px 14px;
+}
+
+/* ═══════════════════════════════════════════════
+   QUIZ MODE
+═══════════════════════════════════════════════ */
+.quiz-header {
+  display:flex; align-items:center; gap:16px; margin-bottom:28px; flex-wrap:wrap;
+}
+.quiz-header h2 { font-size:20px; font-weight:800; }
+.quiz-progress {
+  flex:1; min-width:200px;
+  background:var(--border); border-radius:20px; height:6px;
+  overflow:hidden;
+}
+.quiz-progress-fill {
+  height:100%; border-radius:20px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.4s ease;
+}
+.quiz-score {
+  font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text-dim);
+}
+
+.quiz-card {
+  background:var(--card); border:1px solid var(--border);
+  border-radius:14px; padding:32px;
+  max-width:640px; margin:0 auto 24px;
+  text-align:center; animation: fadeUp 0.3s ease;
+}
+.quiz-q-tag {
+  display:inline-block; margin-bottom:16px;
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  color:var(--accent2); letter-spacing:2px; text-transform:uppercase;
+  border:1px solid rgba(56,217,169,0.3); padding:3px 10px; border-radius:3px;
+}
+.quiz-question {
+  font-size:18px; font-weight:700; margin-bottom:28px; color:var(--text);
+}
+.quiz-reveal-btn {
+  background:var(--accent); border:none; border-radius:8px;
+  padding:12px 32px; color:#fff; font-family:'Syne',sans-serif;
+  font-size:14px; font-weight:700; cursor:pointer;
+  transition: opacity 0.15s;
+}
+.quiz-reveal-btn:hover { opacity:0.85; }
+
+.quiz-answer {
+  margin-top:24px; display:none;
+  text-align:left;
+}
+.quiz-answer.show { display:block; }
+.quiz-answer code.snippet { border-radius:8px; margin-bottom:16px; }
+.quiz-btns { display:flex; gap:10px; justify-content:center; }
+.quiz-btn {
+  padding:9px 24px; border-radius:8px; border:none;
+  font-family:'Syne',sans-serif; font-size:13px; font-weight:700;
+  cursor:pointer; transition:opacity 0.15s;
+}
+.quiz-btn:hover { opacity:0.85; }
+.quiz-btn-pass { background:rgba(56,217,169,0.2); color:var(--accent2); }
+.quiz-btn-fail { background:rgba(247,107,72,0.2); color:var(--accent4); }
+
+.quiz-end {
+  text-align:center; padding:60px 20px;
+  display:none;
+}
+.quiz-end.show { display:block; }
+.quiz-end .big-score {
+  font-size:64px; font-weight:800;
+  font-family:'JetBrains Mono',monospace;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.quiz-end p { color:var(--text-dim); margin:8px 0 24px; font-size:15px; }
+.restart-btn {
+  background:var(--accent); border:none; border-radius:8px;
+  padding:12px 32px; color:#fff; font-family:'Syne',sans-serif;
+  font-size:14px; font-weight:700; cursor:pointer;
+}
+.quiz-category-select {
+  display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; align-items:center;
+}
+.quiz-category-select span { font-size:13px; color:var(--text-dim); }
+
+/* ═══════════════════════════════════════════════
+   ADD CARD FORM
+═══════════════════════════════════════════════ */
+.add-form {
+  max-width:600px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:12px; padding:28px;
+}
+.add-form h2 { font-size:18px; font-weight:800; margin-bottom:6px; }
+.add-form p { font-size:13px; color:var(--text-dim); margin-bottom:24px; }
+.form-row { margin-bottom:18px; }
+.form-row label {
+  display:block; font-size:11px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--accent); font-family:'JetBrains Mono',monospace; margin-bottom:6px;
+}
+.form-row input, .form-row select, .form-row textarea {
+  width:100%; background:var(--code-bg); border:1px solid var(--border);
+  border-radius:6px; padding:10px 14px;
+  color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px;
+  outline:none; transition:border-color 0.2s; resize:vertical;
+}
+.form-row input:focus, .form-row select, .form-row textarea:focus {
+  border-color:var(--accent);
+}
+.form-row textarea { min-height:120px; }
+.submit-btn {
+  background:var(--accent); border:none; border-radius:8px;
+  padding:11px 28px; color:#fff; font-family:'Syne',sans-serif;
+  font-size:14px; font-weight:700; cursor:pointer; transition:opacity 0.15s;
+}
+.submit-btn:hover { opacity:0.85; }
+.custom-cards-section { margin-top:40px; }
+
+/* ═══════════════════════════════════════════════
+   AUTH FORM EXTRAS
+═══════════════════════════════════════════════ */
+.auth-error {
+  background: rgba(247,107,72,0.1);
+  border: 1px solid rgba(247,107,72,0.3);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--accent4);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 16px;
+  display: none;
+}
+.auth-error.show { display: block; }
+
+.auth-success {
+  background: rgba(56,217,169,0.1);
+  border: 1px solid rgba(56,217,169,0.3);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--accent2);
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 16px;
+  display: none;
+}
+.auth-success.show { display: block; }
+
+.auth-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Login gate for protected panels */
+.login-gate {
+  text-align: center;
+  padding: 60px 20px;
+}
+.login-gate .gate-icon { font-size: 48px; margin-bottom: 16px; }
+.login-gate h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.login-gate p { color: var(--text-dim); font-size: 14px; margin-bottom: 24px; }
+.login-gate-btn {
+  background: var(--accent); border: none; border-radius: 8px;
+  padding: 11px 28px; color: #fff; font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.15s; display: inline-block;
+}
+.login-gate-btn:hover { opacity: 0.85; }
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════
+   FAVORITES PANEL
+═══════════════════════════════════════════════ */
+.fav-empty {
+  text-align:center; padding:60px 20px;
+  color:var(--muted); font-size:14px;
+}
+.fav-empty .big-icon { font-size:48px; margin-bottom:16px; }
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+.toast {
+  position:fixed; bottom:24px; right:24px; z-index:9999;
+  background:var(--card); border:1px solid var(--accent2);
+  border-radius:8px; padding:10px 18px;
+  font-size:13px; color:var(--accent2);
+  font-family:'JetBrains Mono',monospace;
+  opacity:0; transform:translateY(10px);
+  transition:all 0.25s;
+  pointer-events:none;
+}
+.toast.show { opacity:1; transform:translateY(0); }
+.toast.error { border-color: var(--accent4); color: var(--accent4); }
+
+/* ═══════════════════════════════════════════════
+   NO RESULTS
+═══════════════════════════════════════════════ */
+.no-results {
+  text-align:center; color:var(--muted);
+  padding:60px 0; font-size:14px; display:none;
+}
+
+/* ═══════════════════════════════════════════════
+   KEYBOARD SHORTCUT HINT
+═══════════════════════════════════════════════ */
+.kbd {
+  display:inline-flex; align-items:center; gap:4px;
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  background:var(--border); border-radius:3px;
+  padding:1px 5px; color:var(--muted);
+}
+
+/* ═══════════════════════════════════════════════
+   SCROLLBAR
+═══════════════════════════════════════════════ */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* ═══════════════════════════════════════════════
+   SIDEBAR SLIDE TOGGLE
+═══════════════════════════════════════════════ */
+.sidebar {
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1),
+              opacity 0.28s ease;
+}
+.sidebar.collapsed {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+  position: absolute; /* take out of flow when hidden */
+}
+
+/* Hamburger toggle button in topbar */
+.menu-toggle-btn {
+  width: 34px; height: 34px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-dim);
+  font-size: 16px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.menu-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+.menu-toggle-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(124,106,247,0.1); }
+
+/* ═══════════════════════════════════════════════
+   NOTIFICATION BANNER (auth feedback)
+═══════════════════════════════════════════════ */
+.notif-banner {
+  position: fixed;
+  top: 62px; left: 50%; transform: translateX(-50%) translateY(-20px);
+  z-index: 9998;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap;
+  max-width: calc(100vw - 40px);
+}
+.notif-banner.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.notif-banner.success {
+  background: linear-gradient(135deg, rgba(56,217,169,0.18), rgba(56,217,169,0.08));
+  border: 1px solid rgba(56,217,169,0.4);
+  color: #38d9a9;
+}
+.notif-banner.info {
+  background: linear-gradient(135deg, rgba(124,106,247,0.18), rgba(124,106,247,0.08));
+  border: 1px solid rgba(124,106,247,0.4);
+  color: #7c6af7;
+}
+.notif-banner.warning {
+  background: linear-gradient(135deg, rgba(247,107,72,0.18), rgba(247,107,72,0.08));
+  border: 1px solid rgba(247,107,72,0.4);
+  color: #f76b48;
+}
+.notif-banner .notif-icon { font-size: 18px; flex-shrink: 0; }
+.notif-banner .notif-close {
+  margin-left: 12px; cursor: pointer; opacity: 0.6;
+  font-size: 16px; line-height: 1;
+  transition: opacity 0.15s;
+}
+.notif-banner .notif-close:hover { opacity: 1; }
+
+/* Logout button in topbar (shown when logged in) */
+.logout-topbar-btn {
+  height: 34px;
+  background: rgba(247,107,72,0.1);
+  border: 1px solid rgba(247,107,72,0.3);
+  border-radius: 6px;
+  padding: 0 12px;
+  display: none; align-items: center; gap: 6px;
+  cursor: pointer; color: #f76b48;
+  font-size: 12px; font-family: 'JetBrains Mono', monospace;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.logout-topbar-btn:hover { background: rgba(247,107,72,0.2); border-color: #f76b48; }
+.logout-topbar-btn.visible { display: flex; }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media(max-width:768px) {
+  .sidebar { display:none; }
+  .main { padding:20px 16px; }
+  .cards { grid-template-columns:1fr; }
+  .topbar { padding:0 14px; }
+  .topbar-logo { font-size:13px; }
+}
+</style>
+</head>
+<body>
+<!-- NOTIFICATION BANNER -->
+<div class="notif-banner" id="notifBanner">
+  <span class="notif-icon" id="notifIcon">✓</span>
+  <span id="notifText"></span>
+  <span class="notif-close" onclick="hideNotif()">✕</span>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="menu-toggle-btn active" id="menuToggleBtn" onclick="toggleSidebar()" title="Toggle menu">☰</button>
+  <div class="topbar-logo">☕ Java DSA</div>
+  <div class="topbar-search">
+    <span class="si">⌕</span>
+    <input type="text" id="globalSearch" placeholder="Search snippets... (Ctrl+K)" autocomplete="off">
+  </div>
+  <div class="topbar-right">
+    <button class="icon-btn" onclick="switchTab('favorites')" title="Favorites" id="favBtn">
+      ★
+      <span class="badge" id="favBadge">0</span>
+    </button>
+    <div id="userPillContainer"></div>
+    <button class="logout-topbar-btn" id="logoutTopbarBtn" onclick="logout()" title="Logout">⏏ Logout</button>
+    <button class="icon-btn mode-btn" onclick="toggleTheme()" title="Toggle theme" id="themeBtn">🌙</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigate</div>
+      <button class="nav-btn active" onclick="setNavActive(this,'all')" data-cat="all">
+        <span class="dot" style="background:#7c6af7"></span> All Snippets
+        <span class="cnt" id="cnt-all">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'basic')" data-cat="basic">
+        <span class="dot" style="background:#7c6af7"></span> Basic I/O
+        <span class="cnt" id="cnt-basic">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'array')" data-cat="array">
+        <span class="dot" style="background:#f7c948"></span> Arrays
+        <span class="cnt" id="cnt-array">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'list')" data-cat="list">
+        <span class="dot" style="background:#38d9a9"></span> Lists
+        <span class="cnt" id="cnt-list">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'map')" data-cat="map">
+        <span class="dot" style="background:#f76b48"></span> Map & Set
+        <span class="cnt" id="cnt-map">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'stack')" data-cat="stack">
+        <span class="dot" style="background:#f064c8"></span> Stack/Queue
+        <span class="cnt" id="cnt-stack">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'tree')" data-cat="tree">
+        <span class="dot" style="background:#48aaf7"></span> Tree
+        <span class="cnt" id="cnt-tree">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'graph')" data-cat="graph">
+        <span class="dot" style="background:#64f096"></span> Graph
+        <span class="cnt" id="cnt-graph">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'sort')" data-cat="sort">
+        <span class="dot" style="background:#f7488c"></span> Sorting
+        <span class="cnt" id="cnt-sort">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'string')" data-cat="string">
+        <span class="dot" style="background:#f79348"></span> Strings
+        <span class="cnt" id="cnt-string">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'bit')" data-cat="bit">
+        <span class="dot" style="background:#b464f7"></span> Bit Tricks
+        <span class="cnt" id="cnt-bit">0</span>
+      </button>
+      <button class="nav-btn" onclick="setNavActive(this,'dp')" data-cat="dp">
+        <span class="dot" style="background:#48c8f7"></span> DP Patterns
+        <span class="cnt" id="cnt-dp">0</span>
+      </button>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tools</div>
+      <button class="nav-btn" onclick="switchTab('complexity')">
+        <span class="dot" style="background:#38d9a9"></span> Complexity Table
+      </button>
+      <button class="nav-btn" onclick="switchTab('quiz')">
+        <span class="dot" style="background:#f7c948"></span> Quiz Mode
+      </button>
+      <button class="nav-btn" onclick="switchTab('add')">
+        <span class="dot" style="background:#7c6af7"></span> Add Snippet
+        <span class="lock-icon" id="addLockIcon">🔒</span>
+      </button>
+      <button class="nav-btn" onclick="switchTab('favorites')">
+        <span class="dot" style="background:#f7488c"></span> Favorites
+        <span class="lock-icon" id="favLockIcon">🔒</span>
+      </button>
+      <button class="nav-btn" onclick="switchTab('auth')" id="authNavBtn">
+        <span class="dot" style="background:#f7c948"></span> Login / Register
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <!-- HERO -->
+    <div class="hero" id="heroSection">
+      <div class="hero-tag">// reference sheet</div>
+      <h1>Java DSA Cheatsheet</h1>
+      <p>All declarations & initializations, copy-paste ready. Stay in flow.</p>
+      <div class="stats">
+        <div class="stat"><span class="stat-num" id="totalSnippets">0</span><span class="stat-label">snippets</span></div>
+        <div class="stat"><span class="stat-num" id="totalCopies">0</span><span class="stat-label">total copies</span></div>
+        <div class="stat"><span class="stat-num" id="totalFavs">0</span><span class="stat-label">favorited</span></div>
+      </div>
+      <div style="margin-top:12px;"><span class="kbd">Ctrl</span> + <span class="kbd">K</span> to search</div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('snippets')" id="tab-snippets">Snippets</button>
+      <button class="tab-btn" onclick="switchTab('complexity')" id="tab-complexity">Complexity Table</button>
+      <button class="tab-btn" onclick="switchTab('quiz')" id="tab-quiz">Quiz Mode</button>
+      <button class="tab-btn" onclick="switchTab('add')" id="tab-add">+ Add Snippet</button>
+      <button class="tab-btn" onclick="switchTab('favorites')" id="tab-favorites">★ Favorites</button>
+      <button class="tab-btn" onclick="switchTab('auth')" id="tab-auth">Login</button>
+    </div>
+
+    <!-- TAB: SNIPPETS -->
+    <div class="tab-panel active" id="panel-snippets">
+      <div class="filters" id="filterChips"></div>
+      <div id="cardsContainer"></div>
+      <div class="no-results" id="noResults">No snippets found. Try a different search.</div>
+    </div>
+
+    <!-- TAB: COMPLEXITY -->
+    <div class="tab-panel" id="panel-complexity">
+      <div id="complexityContent"></div>
+    </div>
+
+    <!-- TAB: QUIZ -->
+    <div class="tab-panel" id="panel-quiz">
+      <div class="quiz-header">
+        <h2>Quiz Mode</h2>
+        <div class="quiz-progress"><div class="quiz-progress-fill" id="quizProgress" style="width:0%"></div></div>
+        <div class="quiz-score" id="quizScore">0 / 0</div>
+      </div>
+      <div class="quiz-category-select">
+        <span>Category:</span>
+        <div class="filters" id="quizFilters"></div>
+      </div>
+      <div id="quizContent"></div>
+      <div class="quiz-end" id="quizEnd">
+        <div class="big-score" id="quizFinalScore">0%</div>
+        <p id="quizFinalMsg">Keep grinding! 💪</p>
+        <button class="restart-btn" onclick="startQuiz()">Restart Quiz</button>
+      </div>
+    </div>
+
+    <!-- TAB: ADD (protected) -->
+    <div class="tab-panel" id="panel-add">
+      <div id="addGate"></div>
+    </div>
+
+    <!-- TAB: FAVORITES (protected) -->
+    <div class="tab-panel" id="panel-favorites">
+      <div id="favContent"></div>
+    </div>
+
+    <!-- TAB: AUTH -->
+    <div class="tab-panel" id="panel-auth">
+      <div class="add-form">
+        <h2 id="authTitle">Login</h2>
+        <p id="authSubtitle">Access your personal favorites & snippets.</p>
+
+        <div class="auth-error" id="authError"></div>
+        <div class="auth-success" id="authSuccessMsg"></div>
+
+        <div class="form-row">
+          <label>Email</label>
+          <input type="email" id="authEmail" placeholder="you@example.com">
+        </div>
+
+        <div class="form-row">
+          <label>Password</label>
+          <input type="password" id="authPassword" placeholder="••••••••"
+                 onkeydown="if(event.key==='Enter') handleAuth()">
+        </div>
+
+        <button class="submit-btn" onclick="handleAuth()" id="authBtn">Login</button>
+
+        <p style="margin-top:15px;font-size:12px;color:var(--text-dim)">
+          <span id="authSwitchText">Don't have an account?</span>
+          <span style="color:var(--accent);cursor:pointer" onclick="toggleAuthMode()"> <span id="authSwitchLink">Register</span></span>
+        </p>
+
+        <div id="logoutSection" style="display:none;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+          <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px;">Logged in as <strong id="loggedInEmail" style="color:var(--accent)"></strong></p>
+          <button class="submit-btn" style="background:var(--accent4)" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   SIDEBAR TOGGLE
+═══════════════════════════════════════════════════ */
+let sidebarOpen = true;
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const btn     = document.getElementById('menuToggleBtn');
+  sidebarOpen   = !sidebarOpen;
+  sidebar.classList.toggle('collapsed', !sidebarOpen);
+  btn.classList.toggle('active', sidebarOpen);
+}
+
+/* ═══════════════════════════════════════════════════
+   NOTIFICATION BANNER
+═══════════════════════════════════════════════════ */
+let notifTimer;
+function showNotif(msg, type = 'success', duration = 4500) {
+  const banner = document.getElementById('notifBanner');
+  const text   = document.getElementById('notifText');
+  const icon   = document.getElementById('notifIcon');
+  const icons  = { success: '✓', info: 'ℹ️', warning: '⚠️' };
+  banner.className = `notif-banner ${type}`;
+  text.textContent = msg;
+  icon.textContent = icons[type] || '✓';
+  banner.classList.remove('show');
+  void banner.offsetWidth; // force reflow for re-animation
+  banner.classList.add('show');
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(hideNotif, duration);
+}
+function hideNotif() {
+  document.getElementById('notifBanner').classList.remove('show');
+}
+
+/* ═══════════════════════════════════════════════════
+   DATA — ALL SNIPPETS
+═══════════════════════════════════════════════════ */
+const SNIPPETS = [
+  // ── BASIC I/O ──────────────────────────────────
+  { id:'s1', tag:'basic', title:'Scanner — basic input',
+    desc:'Read input from console; always create once at the top of your solution.',
+    code:`<span class="kw">import</span> java.util.Scanner;\n\n<span class="cls">Scanner</span> sc = <span class="kw">new</span> <span class="cls">Scanner</span>(System.in);` },
+
+  { id:'s2', tag:'basic', title:'Read int / long / double / string',
+    desc:'All common input-reading methods — pick the one you need.',
+    code:`<span class="type">int</span>    n    = sc.<span class="fn">nextInt</span>();\n<span class="type">long</span>   l    = sc.<span class="fn">nextLong</span>();\n<span class="type">double</span> d    = sc.<span class="fn">nextDouble</span>();\n<span class="cls">String</span> word = sc.<span class="fn">next</span>();       <span class="cmt">// single word</span>\n<span class="cls">String</span> line = sc.<span class="fn">nextLine</span>(); <span class="cmt">// full line</span>` },
+
+  { id:'s3', tag:'basic', title:'BufferedReader (fast input)',
+    desc:'10x faster than Scanner for large inputs in competitive programming.',
+    code:`<span class="kw">import</span> java.io.*;\n\n<span class="cls">BufferedReader</span> br = <span class="kw">new</span> <span class="cls">BufferedReader</span>(\n    <span class="kw">new</span> <span class="cls">InputStreamReader</span>(System.in));\n<span class="cls">StringTokenizer</span> st = <span class="kw">new</span> <span class="cls">StringTokenizer</span>(br.<span class="fn">readLine</span>());\n<span class="type">int</span> a = <span class="cls">Integer</span>.<span class="fn">parseInt</span>(st.<span class="fn">nextToken</span>());\n<span class="type">int</span> b = <span class="cls">Integer</span>.<span class="fn">parseInt</span>(st.<span class="fn">nextToken</span>());` },
+
+  { id:'s4', tag:'basic', title:'PrintWriter (fast output)',
+    desc:'Faster than System.out.println for large outputs; must flush at the end.',
+    code:`<span class="cls">PrintWriter</span> pw = <span class="kw">new</span> <span class="cls">PrintWriter</span>(\n    <span class="kw">new</span> <span class="cls">BufferedWriter</span>(\n        <span class="kw">new</span> <span class="cls">OutputStreamWriter</span>(System.out)));\npw.<span class="fn">println</span>(<span class="str">"answer"</span>);\npw.<span class="fn">flush</span>(); <span class="cmt">// must flush at end!</span>` },
+
+  { id:'s5', tag:'basic', title:'Math utilities',
+    desc:'Most-used Math static methods — no import needed.',
+    code:`<span class="cls">Math</span>.<span class="fn">max</span>(a, b);\n<span class="cls">Math</span>.<span class="fn">min</span>(a, b);\n<span class="cls">Math</span>.<span class="fn">abs</span>(x);\n<span class="cls">Math</span>.<span class="fn">pow</span>(<span class="num">2</span>, <span class="num">10</span>);   <span class="cmt">// 1024.0</span>\n<span class="cls">Math</span>.<span class="fn">sqrt</span>(<span class="num">16</span>);    <span class="cmt">// 4.0</span>\n<span class="cls">Math</span>.<span class="fn">log</span>(n);      <span class="cmt">// natural log</span>\n<span class="cls">Math</span>.<span class="fn">floor</span>(x);   <span class="cls">Math</span>.<span class="fn">ceil</span>(x);` },
+
+  { id:'s6', tag:'basic', title:'Integer & Long bounds',
+    desc:'Use as sentinels for min/max DP, Dijkstra, or comparisons.',
+    code:`<span class="type">int</span>  INF   = <span class="cls">Integer</span>.MAX_VALUE; <span class="cmt">// 2^31 - 1 ≈ 2.1B</span>\n<span class="type">int</span>  NINF  = <span class="cls">Integer</span>.MIN_VALUE;\n<span class="type">long</span> LINF  = <span class="cls">Long</span>.MAX_VALUE;\n\n<span class="cmt">// safe overflow-proof sentinel:</span>\n<span class="type">int</span>  MOD   = <span class="num">1_000_000_007</span>;\n<span class="type">int</span>  SAFE  = <span class="num">0x3f3f3f3f</span>; <span class="cmt">// ~1B, safe to double</span>` },
+
+  { id:'s7', tag:'basic', title:'Pair / custom record',
+    desc:'Java has no built-in Pair; use int[] for speed or record for clarity.',
+    code:`<span class="cmt">// quick pair with int[] (fastest)</span>\n<span class="type">int</span>[] pair = {x, y};\n\n<span class="cmt">// Java 16+ record (clean, immutable)</span>\n<span class="kw">record</span> <span class="cls">Pair</span>(<span class="type">int</span> x, <span class="type">int</span> y) {}\n<span class="cls">Pair</span> p = <span class="kw">new</span> <span class="cls">Pair</span>(<span class="num">1</span>, <span class="num">2</span>);\nSystem.out.<span class="fn">println</span>(p.x + <span class="str">" "</span> + p.y);` },
+
+  { id:'s8', tag:'basic', title:'Modular arithmetic',
+    desc:'Always take mod at each step to avoid overflow in combination/DP problems.',
+    code:`<span class="type">long</span> MOD = <span class="num">1_000_000_007</span>;\n\n<span class="type">long</span> add  = (a % MOD + b % MOD) % MOD;\n<span class="type">long</span> mul  = (a % MOD) * (b % MOD) % MOD;\n<span class="type">long</span> sub  = ((a - b) % MOD + MOD) % MOD; <span class="cmt">// avoid negative</span>` },
+
+  // ── ARRAYS ────────────────────────────────────
+  { id:'a1', tag:'array', title:'1D Array — declare & init',
+    desc:'Fixed-size array; default values are 0 for int, null for objects.',
+    code:`<span class="type">int</span>[] arr = <span class="kw">new</span> <span class="type">int</span>[<span class="num">5</span>];           <span class="cmt">// all zeros</span>\n<span class="type">int</span>[] arr = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>};  <span class="cmt">// inline</span>\n<span class="type">int</span> n = arr.length;             <span class="cmt">// size` },
+
+  { id:'a2', tag:'array', title:'2D Array (matrix / DP table)',
+    desc:'Declare a rows×cols grid; perfect for DP tables and grid problems.',
+    code:`<span class="type">int</span>[][] mat = <span class="kw">new</span> <span class="type">int</span>[<span class="num">3</span>][<span class="num">4</span>]; <span class="cmt">// 3 rows, 4 cols</span>\n<span class="type">int</span> rows = mat.length;\n<span class="type">int</span> cols = mat[<span class="num">0</span>].length;\n\n<span class="cmt">// inline init:</span>\n<span class="type">int</span>[][] m = {{<span class="num">1</span>,<span class="num">2</span>},{<span class="num">3</span>,<span class="num">4</span>}};` },
+
+  { id:'a3', tag:'array', title:'Arrays utility methods',
+    desc:'Fill, sort, copy, binary search — all from java.util.Arrays.',
+    code:`<span class="kw">import</span> java.util.Arrays;\n\n<span class="cls">Arrays</span>.<span class="fn">fill</span>(arr, <span class="num">-1</span>);          <span class="cmt">// fill all with -1</span>\n<span class="cls">Arrays</span>.<span class="fn">sort</span>(arr);             <span class="cmt">// ascending</span>\n<span class="cls">Arrays</span>.<span class="fn">sort</span>(arr, <span class="num">0</span>, n);       <span class="cmt">// sort [0,n)</span>\n<span class="type">int</span>[] c = <span class="cls">Arrays</span>.<span class="fn">copyOf</span>(arr, n);\n<span class="type">int</span>   i = <span class="cls">Arrays</span>.<span class="fn">binarySearch</span>(arr, key);` },
+
+  { id:'a4', tag:'array', title:'Prefix Sum',
+    desc:'Precompute cumulative sums for O(1) range sum queries.',
+    code:`<span class="type">int</span>[] pre = <span class="kw">new</span> <span class="type">int</span>[n + <span class="num">1</span>];\n<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i < n; i++)\n    pre[i + <span class="num">1</span>] = pre[i] + arr[i];\n\n<span class="cmt">// range sum [l, r] inclusive:</span>\n<span class="type">int</span> sum = pre[r + <span class="num">1</span>] - pre[l];` },
+
+  { id:'a5', tag:'array', title:'2D Prefix Sum',
+    desc:'O(1) rectangle sum queries on a matrix.',
+    code:`<span class="type">int</span>[][] pre = <span class="kw">new</span> <span class="type">int</span>[m+<span class="num">1</span>][n+<span class="num">1</span>];\n<span class="kw">for</span> (<span class="type">int</span> i=<span class="num">1</span>; i<=m; i++)\n  <span class="kw">for</span> (<span class="type">int</span> j=<span class="num">1</span>; j<=n; j++)\n    pre[i][j] = grid[i<span class="num">-1</span>][j<span class="num">-1</span>]\n      + pre[i<span class="num">-1</span>][j] + pre[i][j<span class="num">-1</span>] - pre[i<span class="num">-1</span>][j<span class="num">-1</span>];` },
+
+  // ── LISTS ─────────────────────────────────────
+  { id:'l1', tag:'list', title:'ArrayList',
+    desc:'Dynamic resizable array — use when size is unknown at compile time.',
+    code:`<span class="kw">import</span> java.util.ArrayList;\n\n<span class="cls">ArrayList</span>&lt;<span class="cls">Integer</span>&gt; list = <span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;();\nlist.<span class="fn">add</span>(<span class="num">5</span>);\nlist.<span class="fn">get</span>(<span class="num">0</span>);\nlist.<span class="fn">set</span>(<span class="num">0</span>, <span class="num">10</span>);\nlist.<span class="fn">remove</span>(<span class="num">0</span>);    <span class="cmt">// by index</span>\nlist.<span class="fn">size</span>();` },
+
+  { id:'l2', tag:'list', title:'LinkedList',
+    desc:'Doubly linked list — O(1) add/remove at ends; also implements Deque.',
+    code:`<span class="kw">import</span> java.util.LinkedList;\n\n<span class="cls">LinkedList</span>&lt;<span class="cls">Integer</span>&gt; ll = <span class="kw">new</span> <span class="cls">LinkedList</span>&lt;&gt;();\nll.<span class="fn">addFirst</span>(<span class="num">1</span>);  ll.<span class="fn">addLast</span>(<span class="num">2</span>);\nll.<span class="fn">removeFirst</span>(); ll.<span class="fn">removeLast</span>();\nll.<span class="fn">peekFirst</span>();  ll.<span class="fn">peekLast</span>();` },
+
+  { id:'l3', tag:'list', title:'Adjacency List (graph)',
+    desc:'Standard graph representation using a list of lists.',
+    code:`<span class="cls">ArrayList</span>&lt;<span class="cls">ArrayList</span>&lt;<span class="cls">Integer</span>&gt;&gt; adj =\n    <span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;();\n<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++)\n    adj.<span class="fn">add</span>(<span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;());\nadj.<span class="fn">get</span>(u).<span class="fn">add</span>(v);\nadj.<span class="fn">get</span>(v).<span class="fn">add</span>(u); <span class="cmt">// undirected</span>` },
+
+  // ── MAP / SET ─────────────────────────────────
+  { id:'m1', tag:'map', title:'HashMap',
+    desc:'Key-value store with O(1) average get/put; insertion order not guaranteed.',
+    code:`<span class="kw">import</span> java.util.HashMap;\n\n<span class="cls">HashMap</span>&lt;<span class="cls">String</span>, <span class="cls">Integer</span>&gt; map = <span class="kw">new</span> <span class="cls">HashMap</span>&lt;&gt;();\nmap.<span class="fn">put</span>(<span class="str">"a"</span>, <span class="num">1</span>);\nmap.<span class="fn">get</span>(<span class="str">"a"</span>);\nmap.<span class="fn">getOrDefault</span>(<span class="str">"b"</span>, <span class="num">0</span>);\nmap.<span class="fn">containsKey</span>(<span class="str">"a"</span>);\nmap.<span class="fn">merge</span>(<span class="str">"a"</span>, <span class="num">1</span>, Integer::sum); <span class="cmt">// freq count</span>` },
+
+  { id:'m2', tag:'map', title:'TreeMap (sorted by key)',
+    desc:'Sorted map — supports floor/ceiling/first/last key queries in O(log n).',
+    code:`<span class="kw">import</span> java.util.TreeMap;\n\n<span class="cls">TreeMap</span>&lt;<span class="cls">Integer</span>, <span class="cls">Integer</span>&gt; tm = <span class="kw">new</span> <span class="cls">TreeMap</span>&lt;&gt;();\ntm.<span class="fn">put</span>(<span class="num">3</span>, <span class="num">10</span>);\ntm.<span class="fn">floorKey</span>(<span class="num">4</span>);     <span class="cmt">// largest ≤ 4</span>\ntm.<span class="fn">ceilingKey</span>(<span class="num">2</span>);   <span class="cmt">// smallest ≥ 2</span>\ntm.<span class="fn">firstKey</span>();  tm.<span class="fn">lastKey</span>();` },
+
+  { id:'m3', tag:'map', title:'HashSet',
+    desc:'Unique elements with O(1) add/contains/remove; use for visited tracking.',
+    code:`<span class="kw">import</span> java.util.HashSet;\n\n<span class="cls">HashSet</span>&lt;<span class="cls">Integer</span>&gt; set = <span class="kw">new</span> <span class="cls">HashSet</span>&lt;&gt;();\nset.<span class="fn">add</span>(<span class="num">5</span>);\nset.<span class="fn">contains</span>(<span class="num">5</span>);\nset.<span class="fn">remove</span>(<span class="num">5</span>);\nset.<span class="fn">size</span>();` },
+
+  { id:'m4', tag:'map', title:'TreeSet (sorted unique)',
+    desc:'Sorted set with floor/ceiling/first/last — great for range problems.',
+    code:`<span class="kw">import</span> java.util.TreeSet;\n\n<span class="cls">TreeSet</span>&lt;<span class="cls">Integer</span>&gt; ts = <span class="kw">new</span> <span class="cls">TreeSet</span>&lt;&gt;();\nts.<span class="fn">add</span>(<span class="num">3</span>); ts.<span class="fn">add</span>(<span class="num">1</span>); ts.<span class="fn">add</span>(<span class="num">7</span>);\nts.<span class="fn">floor</span>(<span class="num">4</span>);    <span class="cmt">// 3</span>\nts.<span class="fn">ceiling</span>(<span class="num">4</span>);  <span class="cmt">// 7</span>\nts.<span class="fn">first</span>();    <span class="cmt">// 1</span>` },
+
+  // ── STACK / QUEUE / HEAP ──────────────────────
+  { id:'q1', tag:'stack', title:'Stack',
+    desc:'LIFO structure — ideal for backtracking, parentheses, and monotonic stack.',
+    code:`<span class="kw">import</span> java.util.Stack;\n\n<span class="cls">Stack</span>&lt;<span class="cls">Integer</span>&gt; st = <span class="kw">new</span> <span class="cls">Stack</span>&lt;&gt;();\nst.<span class="fn">push</span>(<span class="num">5</span>);\nst.<span class="fn">pop</span>();    <span class="cmt">// remove & return top</span>\nst.<span class="fn">peek</span>();   <span class="cmt">// view top without removing</span>\nst.<span class="fn">isEmpty</span>();` },
+
+  { id:'q2', tag:'stack', title:'Queue (LinkedList)',
+    desc:'FIFO structure — the standard choice for BFS traversal.',
+    code:`<span class="kw">import</span> java.util.Queue;\n<span class="kw">import</span> java.util.LinkedList;\n\n<span class="cls">Queue</span>&lt;<span class="cls">Integer</span>&gt; q = <span class="kw">new</span> <span class="cls">LinkedList</span>&lt;&gt;();\nq.<span class="fn">offer</span>(<span class="num">1</span>);    <span class="cmt">// enqueue</span>\nq.<span class="fn">poll</span>();     <span class="cmt">// dequeue (removes front)</span>\nq.<span class="fn">peek</span>();     <span class="cmt">// front without removing</span>` },
+
+  { id:'q3', tag:'stack', title:'Deque (ArrayDeque)',
+    desc:'Double-ended queue — faster than Stack & LinkedList; use for sliding window.',
+    code:`<span class="kw">import</span> java.util.ArrayDeque;\n<span class="kw">import</span> java.util.Deque;\n\n<span class="cls">Deque</span>&lt;<span class="cls">Integer</span>&gt; dq = <span class="kw">new</span> <span class="cls">ArrayDeque</span>&lt;&gt;();\ndq.<span class="fn">offerFirst</span>(<span class="num">1</span>); dq.<span class="fn">offerLast</span>(<span class="num">2</span>);\ndq.<span class="fn">pollFirst</span>();   dq.<span class="fn">pollLast</span>();\ndq.<span class="fn">peekFirst</span>();   dq.<span class="fn">peekLast</span>();` },
+
+  { id:'q4', tag:'stack', title:'PriorityQueue (Min-Heap)',
+    desc:'Smallest element at top by default — used in Dijkstra, top-K, and scheduling.',
+    code:`<span class="kw">import</span> java.util.PriorityQueue;\n\n<span class="cmt">// Min-heap (default)</span>\n<span class="cls">PriorityQueue</span>&lt;<span class="cls">Integer</span>&gt; pq = <span class="kw">new</span> <span class="cls">PriorityQueue</span>&lt;&gt;();\n\n<span class="cmt">// Max-heap</span>\n<span class="cls">PriorityQueue</span>&lt;<span class="cls">Integer</span>&gt; mpq =\n    <span class="kw">new</span> <span class="cls">PriorityQueue</span>&lt;&gt;(<span class="cls">Collections</span>.reverseOrder());\n\npq.<span class="fn">offer</span>(<span class="num">3</span>); pq.<span class="fn">poll</span>(); pq.<span class="fn">peek</span>();` },
+
+  { id:'q5', tag:'stack', title:'PQ with custom comparator',
+    desc:'Priority queue for int[] pairs — sort by first element (e.g., distance).',
+    code:`<span class="cls">PriorityQueue</span>&lt;<span class="type">int</span>[]&gt; pq =\n    <span class="kw">new</span> <span class="cls">PriorityQueue</span>&lt;&gt;((a, b) -> a[<span class="num">0</span>] - b[<span class="num">0</span>]);\n<span class="cmt">// int[] = {dist, node}</span>\npq.<span class="fn">offer</span>(<span class="kw">new</span> <span class="type">int</span>[]{<span class="num">0</span>, src});\n<span class="type">int</span>[] top = pq.<span class="fn">poll</span>();` },
+
+  // ── TREE ──────────────────────────────────────
+  { id:'t1', tag:'tree', title:'TreeNode (Binary Tree)',
+    desc:'Standard node definition used in most LeetCode tree problems.',
+    code:`<span class="kw">class</span> <span class="cls">TreeNode</span> {\n    <span class="type">int</span> val;\n    <span class="cls">TreeNode</span> left, right;\n    <span class="cls">TreeNode</span>(<span class="type">int</span> val) {\n        <span class="kw">this</span>.val = val;\n    }\n}` },
+
+  { id:'t2', tag:'tree', title:'BFS on Tree (level-order)',
+    desc:'Level-by-level traversal using a queue; gives shortest path in unweighted trees.',
+    code:`<span class="cls">Queue</span>&lt;<span class="cls">TreeNode</span>&gt; q = <span class="kw">new</span> <span class="cls">LinkedList</span>&lt;&gt;();\nq.<span class="fn">offer</span>(root);\n<span class="kw">while</span> (!q.<span class="fn">isEmpty</span>()) {\n    <span class="type">int</span> size = q.<span class="fn">size</span>(); <span class="cmt">// current level size</span>\n    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; size; i++) {\n        <span class="cls">TreeNode</span> node = q.<span class="fn">poll</span>();\n        <span class="kw">if</span> (node.left  != <span class="kw">null</span>) q.<span class="fn">offer</span>(node.left);\n        <span class="kw">if</span> (node.right != <span class="kw">null</span>) q.<span class="fn">offer</span>(node.right);\n    }\n}` },
+
+  { id:'t3', tag:'tree', title:'DFS traversals (recursive)',
+    desc:'Inorder/preorder/postorder in one template — just move the "process" line.',
+    code:`<span class="kw">void</span> <span class="fn">dfs</span>(<span class="cls">TreeNode</span> node) {\n    <span class="kw">if</span> (node == <span class="kw">null</span>) <span class="kw">return</span>;\n    <span class="cmt">// preorder  → process here</span>\n    <span class="fn">dfs</span>(node.left);\n    <span class="cmt">// inorder   → process here</span>\n    <span class="fn">dfs</span>(node.right);\n    <span class="cmt">// postorder → process here</span>\n}` },
+
+  // ── GRAPH ─────────────────────────────────────
+  { id:'g1', tag:'graph', title:'Adjacency List (undirected)',
+    desc:'Most common graph representation for BFS/DFS — add edges after building.',
+    code:`<span class="type">int</span> n = <span class="num">5</span>;\n<span class="cls">ArrayList</span>&lt;<span class="cls">ArrayList</span>&lt;<span class="cls">Integer</span>&gt;&gt; adj =\n    <span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;();\n<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++)\n    adj.<span class="fn">add</span>(<span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;());\nadj.<span class="fn">get</span>(u).<span class="fn">add</span>(v);\nadj.<span class="fn">get</span>(v).<span class="fn">add</span>(u); <span class="cmt">// bidirectional</span>` },
+
+  { id:'g2', tag:'graph', title:'BFS on Graph',
+    desc:'Explores all nodes level by level; guarantees shortest path in unweighted graphs.',
+    code:`<span class="type">boolean</span>[] vis = <span class="kw">new</span> <span class="type">boolean</span>[n];\n<span class="cls">Queue</span>&lt;<span class="cls">Integer</span>&gt; q = <span class="kw">new</span> <span class="cls">LinkedList</span>&lt;&gt;();\nq.<span class="fn">offer</span>(<span class="num">0</span>); vis[<span class="num">0</span>] = <span class="kw">true</span>;\n<span class="kw">while</span> (!q.<span class="fn">isEmpty</span>()) {\n    <span class="type">int</span> node = q.<span class="fn">poll</span>();\n    <span class="kw">for</span> (<span class="type">int</span> nb : adj.<span class="fn">get</span>(node))\n        <span class="kw">if</span> (!vis[nb]) { vis[nb]=<span class="kw">true</span>; q.<span class="fn">offer</span>(nb); }\n}` },
+
+  { id:'g3', tag:'graph', title:'DFS on Graph',
+    desc:'Recursively explores as deep as possible; useful for cycle detection and connectivity.',
+    code:`<span class="type">boolean</span>[] vis = <span class="kw">new</span> <span class="type">boolean</span>[n];\n<span class="kw">void</span> <span class="fn">dfs</span>(<span class="type">int</span> node) {\n    vis[node] = <span class="kw">true</span>;\n    <span class="kw">for</span> (<span class="type">int</span> nb : adj.<span class="fn">get</span>(node))\n        <span class="kw">if</span> (!vis[nb]) <span class="fn">dfs</span>(nb);\n}` },
+
+  { id:'g4', tag:'graph', title:"Dijkstra's Shortest Path",
+    desc:'Single-source shortest path on weighted graph with non-negative edges.',
+    code:`<span class="type">int</span>[] dist = <span class="kw">new</span> <span class="type">int</span>[n];\n<span class="cls">Arrays</span>.<span class="fn">fill</span>(dist, <span class="cls">Integer</span>.MAX_VALUE);\ndist[src] = <span class="num">0</span>;\n<span class="cls">PriorityQueue</span>&lt;<span class="type">int</span>[]&gt; pq =\n    <span class="kw">new</span> <span class="cls">PriorityQueue</span>&lt;&gt;((a,b)->a[<span class="num">0</span>]-b[<span class="num">0</span>]);\npq.<span class="fn">offer</span>(<span class="kw">new</span> <span class="type">int</span>[]{<span class="num">0</span>, src});\n<span class="kw">while</span>(!pq.<span class="fn">isEmpty</span>()){\n    <span class="type">int</span>[] cur = pq.<span class="fn">poll</span>();\n    <span class="kw">if</span>(cur[<span class="num">0</span>] > dist[cur[<span class="num">1</span>]]) <span class="kw">continue</span>;\n    <span class="cmt">// relax neighbors here</span>\n}` },
+
+  { id:'g5', tag:'graph', title:'Union-Find (DSU)',
+    desc:'Disjoint Set Union — track connected components in near O(1) per operation.',
+    code:`<span class="type">int</span>[] parent = <span class="kw">new</span> <span class="type">int</span>[n];\n<span class="type">int</span>[] rank   = <span class="kw">new</span> <span class="type">int</span>[n];\n<span class="kw">for</span>(<span class="type">int</span> i=<span class="num">0</span>; i&lt;n; i++) parent[i]=i;\n\n<span class="type">int</span> <span class="fn">find</span>(<span class="type">int</span> x){\n    <span class="kw">if</span>(parent[x]!=x) parent[x]=<span class="fn">find</span>(parent[x]);\n    <span class="kw">return</span> parent[x];\n}\n<span class="kw">void</span> <span class="fn">union</span>(<span class="type">int</span> a, <span class="type">int</span> b){\n    <span class="type">int</span> ra=<span class="fn">find</span>(a), rb=<span class="fn">find</span>(b);\n    <span class="kw">if</span>(rank[ra]&lt;rank[rb]) parent[ra]=rb;\n    <span class="kw">else if</span>(rank[ra]>rank[rb]) parent[rb]=ra;\n    <span class="kw">else</span>{ parent[rb]=ra; rank[ra]++; }\n}` },
+
+  // ── SORTING ───────────────────────────────────
+  { id:'so1', tag:'sort', title:'Custom comparator (array)',
+    desc:'Sort a 2D array by any column using a lambda comparator.',
+    code:`<span class="cmt">// sort by first column ascending</span>\n<span class="cls">Arrays</span>.<span class="fn">sort</span>(arr, (a, b) -> a[<span class="num">0</span>] - b[<span class="num">0</span>]);\n\n<span class="cmt">// sort by second column descending</span>\n<span class="cls">Arrays</span>.<span class="fn">sort</span>(arr, (a, b) -> b[<span class="num">1</span>] - a[<span class="num">1</span>]);\n\n<span class="cmt">// multi-key sort</span>\n<span class="cls">Arrays</span>.<span class="fn">sort</span>(arr, (a,b) -> a[<span class="num">0</span>]!=b[<span class="num">0</span>] ? a[<span class="num">0</span>]-b[<span class="num">0</span>] : a[<span class="num">1</span>]-b[<span class="num">1</span>]);` },
+
+  { id:'so2', tag:'sort', title:'Collections utilities',
+    desc:'Handy static methods for sorting, reversing, and finding extremes in lists.',
+    code:`<span class="kw">import</span> java.util.Collections;\n\n<span class="cls">Collections</span>.<span class="fn">sort</span>(list);\n<span class="cls">Collections</span>.<span class="fn">sort</span>(list, (a,b)->b-a); <span class="cmt">// desc</span>\n<span class="cls">Collections</span>.<span class="fn">reverse</span>(list);\n<span class="cls">Collections</span>.<span class="fn">max</span>(list);\n<span class="cls">Collections</span>.<span class="fn">min</span>(list);\n<span class="cls">Collections</span>.<span class="fn">frequency</span>(list, val);` },
+
+  // ── STRINGS ───────────────────────────────────
+  { id:'st1', tag:'string', title:'String common methods',
+    desc:'The most-used String operations you will reach for in every problem.',
+    code:`<span class="cls">String</span> s = <span class="str">"hello"</span>;\ns.<span class="fn">length</span>();\ns.<span class="fn">charAt</span>(<span class="num">0</span>);\ns.<span class="fn">substring</span>(<span class="num">1</span>, <span class="num">3</span>);    <span class="cmt">// "el"</span>\ns.<span class="fn">indexOf</span>(<span class="str">'l'</span>);\ns.<span class="fn">contains</span>(<span class="str">"ell"</span>);\ns.<span class="fn">equals</span>(<span class="str">"hello"</span>);\ns.<span class="fn">toCharArray</span>();\ns.<span class="fn">trim</span>();\ns.<span class="fn">toLowerCase</span>();` },
+
+  { id:'st2', tag:'string', title:'StringBuilder',
+    desc:'Mutable string — prevents O(n²) overhead of repeated + concatenation in loops.',
+    code:`<span class="cls">StringBuilder</span> sb = <span class="kw">new</span> <span class="cls">StringBuilder</span>();\nsb.<span class="fn">append</span>(<span class="str">"hello"</span>);\nsb.<span class="fn">insert</span>(<span class="num">0</span>, <span class="str">"say: "</span>);\nsb.<span class="fn">deleteCharAt</span>(<span class="num">0</span>);\nsb.<span class="fn">reverse</span>();\nsb.<span class="fn">length</span>();\nsb.<span class="fn">toString</span>();` },
+
+  { id:'st3', tag:'string', title:'Char operations',
+    desc:'Character checks and index tricks essential for sliding window and frequency maps.',
+    code:`<span class="type">char</span> c = <span class="str">'A'</span>;\n<span class="cls">Character</span>.<span class="fn">isLetter</span>(c);\n<span class="cls">Character</span>.<span class="fn">isDigit</span>(c);\n<span class="cls">Character</span>.<span class="fn">toLowerCase</span>(c);\n<span class="cls">Character</span>.<span class="fn">toUpperCase</span>(c);\n<span class="type">int</span> idx = c - <span class="str">'a'</span>; <span class="cmt">// 0-based index (0-25)</span>` },
+
+  { id:'st4', tag:'string', title:'Split & join',
+    desc:'Tokenize a string or join parts — commonly used in parsing problems.',
+    code:`<span class="cls">String</span>[] parts = s.<span class="fn">split</span>(<span class="str">" "</span>);\n<span class="cls">String</span>[] parts = s.<span class="fn">split</span>(<span class="str">","</span>);\n<span class="cls">String</span> joined  = <span class="cls">String</span>.<span class="fn">join</span>(<span class="str">"-"</span>, parts);\n<span class="cls">String</span> joined  = <span class="cls">String</span>.<span class="fn">join</span>(<span class="str">""</span>,\n    <span class="cls">Arrays</span>.<span class="fn">asList</span>(parts));` },
+
+  // ── BIT TRICKS ────────────────────────────────
+  { id:'b1', tag:'bit', title:'Bit trick essentials',
+    desc:'Core bitwise operations you will use for mask-DP and state compression.',
+    code:`<span class="type">int</span> x = <span class="num">13</span>; <span class="cmt">// 1101 in binary</span>\n(x & <span class="num">1</span>)         <span class="cmt">// check if odd → 1</span>\n(x >> <span class="num">1</span>)        <span class="cmt">// divide by 2</span>\n(x << <span class="num">1</span>)        <span class="cmt">// multiply by 2</span>\n(x & (x-<span class="num">1</span>))     <span class="cmt">// clear lowest set bit</span>\n(x & -x)         <span class="cmt">// isolate lowest set bit</span>\n<span class="cls">Integer</span>.<span class="fn">bitCount</span>(x);  <span class="cmt">// count set bits</span>` },
+
+  { id:'b2', tag:'bit', title:'Check / set / clear / toggle bit',
+    desc:'Four fundamental bit manipulations for competitive programming.',
+    code:`<span class="type">int</span> n = <span class="num">5</span>; <span class="cmt">// 101</span>\n<span class="type">int</span> i = <span class="num">1</span>; <span class="cmt">// target bit position</span>\n\n<span class="type">boolean</span> isSet = (n >> i & <span class="num">1</span>) == <span class="num">1</span>;  <span class="cmt">// check</span>\n<span class="type">int</span> set    = n | (<span class="num">1</span> << i);   <span class="cmt">// set</span>\n<span class="type">int</span> clear  = n & ~(<span class="num">1</span> << i); <span class="cmt">// clear</span>\n<span class="type">int</span> toggle = n ^ (<span class="num">1</span> << i);  <span class="cmt">// toggle</span>` },
+
+  { id:'b3', tag:'bit', title:'Power of 2 checks',
+    desc:'O(1) tricks to check if a number is a power of 2 or round up to next power.',
+    code:`<span class="type">boolean</span> isPow2 = n > <span class="num">0</span> && (n & (n-<span class="num">1</span>)) == <span class="num">0</span>;\n\n<span class="cmt">// next power of 2 >= n</span>\n<span class="type">int</span> p = <span class="num">1</span>;\n<span class="kw">while</span> (p < n) p <<= <span class="num">1</span>;\n\n<span class="cmt">// fast XOR swap (no temp)</span>\na ^= b; b ^= a; a ^= b;` },
+
+  { id:'b4', tag:'bit', title:'Bitmask — iterate all subsets',
+    desc:'Enumerate all 2^n subsets — essential for bitmask DP.',
+    code:`<span class="kw">for</span> (<span class="type">int</span> mask = <span class="num">0</span>; mask < (<span class="num">1</span> << n); mask++) {\n    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i < n; i++) {\n        <span class="kw">if</span> ((mask >> i & <span class="num">1</span>) == <span class="num">1</span>) {\n            <span class="cmt">// bit i is set in this subset</span>\n        }\n    }\n}` },
+
+  // ── DP PATTERNS ───────────────────────────────
+  { id:'d1', tag:'dp', title:'0/1 Knapsack',
+    desc:'Classic DP — can you reach exactly weight W using items with given weights/values?',
+    code:`<span class="type">int</span>[] dp = <span class="kw">new</span> <span class="type">int</span>[W + <span class="num">1</span>];\n<span class="kw">for</span> (<span class="type">int</span>[] item : items) {  <span class="cmt">// {weight, value}</span>\n    <span class="kw">for</span> (<span class="type">int</span> w = W; w >= item[<span class="num">0</span>]; w--)\n        dp[w] = <span class="cls">Math</span>.<span class="fn">max</span>(dp[w],\n                dp[w - item[<span class="num">0</span>]] + item[<span class="num">1</span>]);\n}` },
+
+  { id:'d2', tag:'dp', title:'Longest Common Subsequence',
+    desc:'Classic 2D DP — find the longest subsequence common to two strings.',
+    code:`<span class="type">int</span> m = a.length(), n = b.length();\n<span class="type">int</span>[][] dp = <span class="kw">new</span> <span class="type">int</span>[m+<span class="num">1</span>][n+<span class="num">1</span>];\n<span class="kw">for</span>(<span class="type">int</span> i=<span class="num">1</span>;i<=m;i++)\n  <span class="kw">for</span>(<span class="type">int</span> j=<span class="num">1</span>;j<=n;j++)\n    dp[i][j] = a.<span class="fn">charAt</span>(i<span class="num">-1</span>)==b.<span class="fn">charAt</span>(j<span class="num">-1</span>)\n        ? dp[i<span class="num">-1</span>][j<span class="num">-1</span>]+<span class="num">1</span>\n        : <span class="cls">Math</span>.<span class="fn">max</span>(dp[i<span class="num">-1</span>][j], dp[i][j<span class="num">-1</span>]);` },
+
+  { id:'d3', tag:'dp', title:'Longest Increasing Subsequence',
+    desc:'O(n log n) LIS using patience sorting with binary search.',
+    code:`<span class="cls">ArrayList</span>&lt;<span class="cls">Integer</span>&gt; tails = <span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;();\n<span class="kw">for</span> (<span class="type">int</span> x : nums) {\n    <span class="type">int</span> pos = <span class="cls">Collections</span>.<span class="fn">binarySearch</span>(tails, x);\n    <span class="kw">if</span> (pos < <span class="num">0</span>) pos = ~pos;\n    <span class="kw">if</span> (pos == tails.<span class="fn">size</span>()) tails.<span class="fn">add</span>(x);\n    <span class="kw">else</span> tails.<span class="fn">set</span>(pos, x);\n}\n<span class="type">int</span> lis = tails.<span class="fn">size</span>();` },
+
+  { id:'d4', tag:'dp', title:'Backtracking template',
+    desc:'Generic backtracking skeleton — works for subsets, permutations, N-Queens.',
+    code:`<span class="kw">void</span> <span class="fn">backtrack</span>(<span class="type">int</span> start, <span class="cls">List</span>&lt;<span class="cls">Integer</span>&gt; curr) {\n    result.<span class="fn">add</span>(<span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;(curr)); <span class="cmt">// record</span>\n    <span class="kw">for</span> (<span class="type">int</span> i = start; i < n; i++) {\n        curr.<span class="fn">add</span>(nums[i]);      <span class="cmt">// choose</span>\n        <span class="fn">backtrack</span>(i+<span class="num">1</span>, curr);  <span class="cmt">// explore</span>\n        curr.<span class="fn">remove</span>(curr.<span class="fn">size</span>()-<span class="num">1</span>); <span class="cmt">// undo</span>\n    }\n}` },
+
+  { id:'d5', tag:'dp', title:'Two Pointer template',
+    desc:'Classic two-pointer for sorted arrays — find pairs summing to target in O(n).',
+    code:`<span class="type">int</span> lo = <span class="num">0</span>, hi = arr.length - <span class="num">1</span>;\n<span class="kw">while</span> (lo < hi) {\n    <span class="type">int</span> sum = arr[lo] + arr[hi];\n    <span class="kw">if</span>      (sum == target) { <span class="cmt">/* found */</span> }\n    <span class="kw">else if</span> (sum < target)  lo++;\n    <span class="kw">else</span>                    hi--;\n}` },
+
+  { id:'d6', tag:'dp', title:'Sliding Window template',
+    desc:'Fixed/variable window for substring / subarray problems — O(n).',
+    code:`<span class="type">int</span> lo = <span class="num">0</span>, maxLen = <span class="num">0</span>;\n<span class="cls">HashMap</span>&lt;<span class="cls">Character</span>,<span class="cls">Integer</span>&gt; freq = <span class="kw">new</span> <span class="cls">HashMap</span>&lt;&gt;();\n<span class="kw">for</span> (<span class="type">int</span> hi = <span class="num">0</span>; hi < s.<span class="fn">length</span>(); hi++) {\n    freq.<span class="fn">merge</span>(s.<span class="fn">charAt</span>(hi), <span class="num">1</span>, Integer::sum);\n    <span class="kw">while</span> (<span class="cmt">/* window invalid */</span>) {\n        freq.<span class="fn">merge</span>(s.<span class="fn">charAt</span>(lo), -<span class="num">1</span>, Integer::sum);\n        <span class="kw">if</span>(freq.<span class="fn">get</span>(s.<span class="fn">charAt</span>(lo))==<span class="num">0</span>)\n            freq.<span class="fn">remove</span>(s.<span class="fn">charAt</span>(lo));\n        lo++;\n    }\n    maxLen = <span class="cls">Math</span>.<span class="fn">max</span>(maxLen, hi - lo + <span class="num">1</span>);\n}` },
+];
+
+/* ═══════════════════════════════════════════════════
+   COMPLEXITY TABLE DATA
+═══════════════════════════════════════════════════ */
+const COMPLEXITY = [
+  { group:'Arrays & Strings', rows:[
+    {ds:'Array access',        access:'O(1)',    search:'O(n)',   insert:'O(n)',   delete:'O(n)',   space:'O(n)'},
+    {ds:'Dynamic Array (ArrayList)',access:'O(1)',search:'O(n)', insert:'O(1)*', delete:'O(n)',   space:'O(n)'},
+    {ds:'String (immutable)',  access:'O(1)',    search:'O(n)',   insert:'O(n)',   delete:'O(n)',   space:'O(n)'},
+    {ds:'StringBuilder',       access:'O(1)',    search:'O(n)',   insert:'O(1)*', delete:'O(n)',   space:'O(n)'},
+  ]},
+  { group:'Linked Structures', rows:[
+    {ds:'LinkedList (head)',    access:'O(n)',    search:'O(n)',   insert:'O(1)',   delete:'O(1)',   space:'O(n)'},
+    {ds:'Stack (ArrayDeque)',   access:'O(1)*',  search:'O(n)',   insert:'O(1)',   delete:'O(1)',   space:'O(n)'},
+    {ds:'Queue (ArrayDeque)',   access:'O(1)*',  search:'O(n)',   insert:'O(1)',   delete:'O(1)',   space:'O(n)'},
+  ]},
+  { group:'Hash-Based', rows:[
+    {ds:'HashMap',             access:'O(1)*',  search:'O(1)*',  insert:'O(1)*', delete:'O(1)*',  space:'O(n)'},
+    {ds:'HashSet',             access:'–',       search:'O(1)*',  insert:'O(1)*', delete:'O(1)*',  space:'O(n)'},
+  ]},
+  { group:'Tree-Based', rows:[
+    {ds:'TreeMap (Red-Black)', access:'O(log n)',search:'O(log n)',insert:'O(log n)',delete:'O(log n)',space:'O(n)'},
+    {ds:'TreeSet',             access:'–',       search:'O(log n)',insert:'O(log n)',delete:'O(log n)',space:'O(n)'},
+    {ds:'Binary Search Tree',  access:'O(log n)',search:'O(log n)',insert:'O(log n)',delete:'O(log n)',space:'O(n)'},
+    {ds:'Heap / PriorityQueue',access:'O(1)*',  search:'O(n)',   insert:'O(log n)',delete:'O(log n)',space:'O(n)'},
+  ]},
+  { group:'Graph', rows:[
+    {ds:'Adj. List (BFS/DFS)', access:'O(V+E)', search:'O(V+E)',insert:'O(1)',  delete:'O(E)',   space:'O(V+E)'},
+    {ds:'Adj. Matrix',         access:'O(1)',    search:'O(V²)', insert:'O(V²)', delete:'O(V²)', space:'O(V²)'},
+    {ds:'Union-Find (DSU)',    access:'O(α)',    search:'O(α)',  insert:'O(α)',  delete:'–',      space:'O(n)'},
+  ]},
+  { group:'Sorting Algorithms', rows:[
+    {ds:'Arrays.sort (dual pivot)',access:'–',  search:'–',     insert:'–',     delete:'–',     space:'O(n log n) avg, O(n log n) space'},
+    {ds:'Merge Sort',            access:'–',     search:'–',     insert:'–',     delete:'–',     space:'O(n log n) time, O(n) space'},
+    {ds:'Binary Search',         access:'O(log n)',search:'O(log n)',insert:'–',delete:'–',     space:'O(1)'},
+  ]},
+];
+
+function colorO(val) {
+  if (!val || val === '–') return `<span style="color:var(--muted)">${val||'–'}</span>`;
+  if (val.includes('O(1)'))     return `<span class="o1">${val}</span>`;
+  if (val.includes('O(log'))    return `<span class="olog">${val}</span>`;
+  if (val.includes('O(n log'))  return `<span class="onlog">${val}</span>`;
+  if (val.includes('O(n²)') || val.includes('O(V²)')) return `<span class="on2">${val}</span>`;
+  if (val.includes('O(n)') || val.includes('O(V'))    return `<span class="on">${val}</span>`;
+  if (val.includes('O(α)'))     return `<span class="o1">${val}</span>`;
+  return `<span style="color:var(--text-dim)">${val}</span>`;
+}
+
+function buildComplexityTable() {
+  let html = `<h2 style="font-size:20px;font-weight:800;margin-bottom:6px;">Time & Space Complexity</h2>
+  <p style="color:var(--text-dim);font-size:13px;margin-bottom:24px;">* = amortized average case</p>
+  <div style="overflow-x:auto;">
+  <table class="complexity-table">
+    <thead><tr>
+      <th>Data Structure</th><th>Access</th><th>Search</th><th>Insert</th><th>Delete</th><th>Space / Notes</th>
+    </tr></thead><tbody>`;
+  for (const g of COMPLEXITY) {
+    html += `<tr class="complexity-group"><th colspan="6">${g.group}</th></tr>`;
+    for (const r of g.rows) {
+      html += `<tr>
+        <td class="ds-name">${r.ds}</td>
+        <td>${colorO(r.access)}</td>
+        <td>${colorO(r.search)}</td>
+        <td>${colorO(r.insert)}</td>
+        <td>${colorO(r.delete)}</td>
+        <td style="font-size:11px;color:var(--text-dim)">${r.space}</td>
+      </tr>`;
+    }
+  }
+  html += `</tbody></table></div>`;
+  document.getElementById('complexityContent').innerHTML = html;
+}
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+let activeTag = 'all';
+let searchQuery = '';
+let favorites = [];
+let copyCounts = JSON.parse(localStorage.getItem('dsa_copies') || '{}');
+let customSnippets = [];
+
+/* ═══════════════════════════════════════════════════
+   AUTH STATE
+═══════════════════════════════════════════════════ */
+let authMode = "login";
+let authToken = localStorage.getItem('dsa_auth_token') || null;
+let currentUser = localStorage.getItem('dsa_auth_email') || null;
+
+const API_BASE = "https://javacheatsheet-backend.onrender.com/api";
+
+function allSnippets() { return [...SNIPPETS, ...customSnippets]; }
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR COUNTS
+═══════════════════════════════════════════════════ */
+function updateCounts() {
+  const tags = ['basic','array','list','map','stack','tree','graph','sort','string','bit','dp'];
+  const all = allSnippets();
+  document.getElementById('cnt-all').textContent = all.length;
+  for (const t of tags) {
+    const el = document.getElementById('cnt-' + t);
+    if (el) el.textContent = all.filter(s => s.tag === t).length;
+  }
+  document.getElementById('totalSnippets').textContent = all.length;
+  const total = Object.values(copyCounts).reduce((a,b)=>a+b,0);
+  document.getElementById('totalCopies').textContent = total;
+  document.getElementById('totalFavs').textContent = favorites.length;
+  const badge = document.getElementById('favBadge');
+  badge.textContent = favorites.length;
+  badge.classList.toggle('show', favorites.length > 0);
+
+  // Update lock icons
+  const isLoggedIn = !!authToken;
+  const addLock = document.getElementById('addLockIcon');
+  const favLock = document.getElementById('favLockIcon');
+  if (addLock) addLock.style.display = isLoggedIn ? 'none' : 'inline';
+  if (favLock) favLock.style.display = isLoggedIn ? 'none' : 'inline';
+
+  // Update user pill
+  updateUserPill();
+
+  // Show/hide topbar logout button
+  const logoutBtn = document.getElementById('logoutTopbarBtn');
+  if (logoutBtn) logoutBtn.classList.toggle('visible', !!authToken);
+
+  // Update auth tab label
+  const authTab = document.getElementById('tab-auth');
+  if (authTab) authTab.textContent = isLoggedIn ? '👤 Account' : 'Login';
+  const authNavBtn = document.getElementById('authNavBtn');
+  if (authNavBtn) authNavBtn.querySelector('span:not(.dot)') && (authNavBtn.lastChild.textContent = isLoggedIn ? ' Account' : ' Login / Register');
+}
+
+function updateUserPill() {
+  const container = document.getElementById('userPillContainer');
+  if (authToken && currentUser) {
+    const initial = currentUser.charAt(0).toUpperCase();
+    const shortEmail = currentUser.length > 18 ? currentUser.substring(0, 15) + '...' : currentUser;
+    container.innerHTML = `
+      <div class="user-pill" title="${currentUser}">
+        <div class="avatar">${initial}</div>
+        ${shortEmail}
+      </div>`;
+  } else {
+    container.innerHTML = `
+      <button class="icon-btn" onclick="switchTab('auth')" title="Login" style="font-size:13px;font-family:'JetBrains Mono',monospace;width:auto;padding:0 10px;">
+        Login
+      </button>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   RENDER CARDS
+═══════════════════════════════════════════════════ */
+const tagNames = {
+  basic:'Basic I/O & Utilities', array:'Arrays', list:'Lists',
+  map:'Map & Set', stack:'Stack, Queue & Heap',
+  tree:'Binary Tree', graph:'Graph Algorithms',
+  sort:'Sorting', string:'Strings', bit:'Bit Manipulation',
+  dp:'DP & Algorithm Patterns', custom:'Custom Snippets'
+};
+const tagOrder = ['basic','array','list','map','stack','tree','graph','sort','string','bit','dp','custom'];
+
+function buildCard(item, showDelete = false) {
+  const isFav = favorites.includes(item.id);
+  const cnt   = copyCounts[item.id] || 0;
+  const favBtn = authToken
+    ? `<button class="small-btn${isFav ? ' active-fav' : ''}" onclick="toggleFav('${item.id}')" title="Favorite">★</button>`
+    : `<button class="small-btn" onclick="promptLogin('favorites')" title="Login to favorite" style="opacity:0.4">★</button>`;
+
+  const deleteBtn = showDelete
+    ? `<button class="small-btn" onclick="deleteCustom('${item.id}')" title="Delete" style="color:#f7488c">✕</button>`
+    : '';
+
+  return `
+    <div class="card${isFav ? ' favorited' : ''}" id="card-${item.id}">
+      <div class="card-header">
+        <span class="card-title">${item.title}</span>
+        <div class="card-actions">
+          <span class="card-tag tag-${item.tag}">${item.tag}</span>
+          ${favBtn}
+          <button class="small-btn" onclick="copySnippet(this,'${item.id}')" title="Copy">⎘ copy</button>
+          ${deleteBtn}
+        </div>
+      </div>
+      <code class="snippet">${item.code}</code>
+      <div class="card-desc">${item.desc}</div>
+      <div class="copy-count${cnt > 0 ? ' show' : ''}" id="cc-${item.id}">copied ${cnt}×</div>
+    </div>`;
+}
+
+function buildCards() {
+  const container = document.getElementById('cardsContainer');
+  const sections = {};
+  const sq = searchQuery.toLowerCase();
+  for (const item of allSnippets()) {
+    const matchTag = activeTag === 'all' || item.tag === activeTag;
+    const rawText = item.code.replace(/<[^>]+>/g,'').toLowerCase();
+    const matchQ = !sq || item.title.toLowerCase().includes(sq)
+                       || item.desc.toLowerCase().includes(sq)
+                       || rawText.includes(sq);
+    if (!matchTag || !matchQ) continue;
+    if (!sections[item.tag]) sections[item.tag] = [];
+    sections[item.tag].push(item);
+  }
+  let html = ''; let count = 0;
+  for (const tag of tagOrder) {
+    if (!sections[tag]) continue;
+    html += `<div class="section">
+      <div class="section-title">${tagNames[tag]}</div>
+      <div class="cards">`;
+    for (const item of sections[tag]) { html += buildCard(item); count++; }
+    html += `</div></div>`;
+  }
+  container.innerHTML = html;
+  document.getElementById('noResults').style.display = count === 0 ? 'block' : 'none';
+}
+
+/* ═══════════════════════════════════════════════════
+   FILTER CHIPS
+═══════════════════════════════════════════════════ */
+function buildFilterChips() {
+  const tags = [['all','All'], ...tagOrder.filter(t=>t!=='custom').map(t=>[t, tagNames[t].split(' ')[0]])];
+  document.getElementById('filterChips').innerHTML =
+    tags.map(([t,label]) =>
+      `<button class="filter-btn${activeTag===t?' active':''}" onclick="setFilter(this,'${t}')">${label}</button>`
+    ).join('');
+}
+
+function setFilter(btn, tag) {
+  activeTag = tag;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.cat === tag);
+  });
+  buildCards();
+}
+
+function setNavActive(btn, tag) {
+  activeTag = tag;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildFilterChips();
+  buildCards();
+  switchTab('snippets');
+  // Auto-close sidebar on mobile
+  if (window.innerWidth <= 900 && sidebarOpen) toggleSidebar();
+}
+
+/* ═══════════════════════════════════════════════════
+   COPY
+═══════════════════════════════════════════════════ */
+function copySnippet(btn, id) {
+  const card = document.getElementById('card-' + id);
+  const code = card.querySelector('code').innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = '✓ done';
+    btn.classList.add('copied');
+    copyCounts[id] = (copyCounts[id]||0) + 1;
+    localStorage.setItem('dsa_copies', JSON.stringify(copyCounts));
+    const cc = document.getElementById('cc-' + id);
+    if (cc) { cc.textContent = `copied ${copyCounts[id]}×`; cc.classList.add('show'); }
+    updateCounts();
+    setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   AUTH HELPERS
+═══════════════════════════════════════════════════ */
+function promptLogin(destination) {
+  showToast('🔒 Login required');
+  switchTab('auth');
+}
+
+function buildLoginGate(featureName, icon) {
+  return `<div class="login-gate">
+    <div class="gate-icon">${icon}</div>
+    <h3>${featureName} requires login</h3>
+    <p>Create a free account to save your ${featureName.toLowerCase()} and access them anywhere.</p>
+    <button class="login-gate-btn" onclick="switchTab('auth')">Login or Register →</button>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   FAVORITES (protected)
+═══════════════════════════════════════════════════ */
+async function toggleFav(id) {
+  if (!authToken) { promptLogin('favorites'); return; }
+
+  try {
+    const res = await fetch(API_BASE + "/favorites/" + id, {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + authToken }
+    });
+
+    if (res.status === 401) { handleTokenExpired(); return; }
+    if (!res.ok) throw new Error('Failed');
+
+    const data = await res.json();
+    favorites = Array.isArray(data) ? data : (data.favorites || []);
+    updateCounts();
+    buildCards();
+    buildFavPanel();
+    showToast(favorites.includes(id) ? '★ Added to favorites' : '☆ Removed from favorites');
+  } catch (e) {
+    showToast('Could not update favorite', true);
+  }
+}
+
+function buildFavPanel() {
+  const el = document.getElementById('favContent');
+  if (!authToken) {
+    el.innerHTML = buildLoginGate('Favorites', '★');
+    return;
+  }
+  const items = allSnippets().filter(s => favorites.includes(s.id));
+  if (!items.length) {
+    el.innerHTML = `<div class="fav-empty"><div class="big-icon">★</div>No favorites yet.<br>Click ★ on any card to save it here.</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="cards">${items.map(i => buildCard(i)).join('')}</div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════════════════ */
+let quizItems = [], quizIdx = 0, quizCorrect = 0, quizTag = 'all';
+
+function buildQuizFilters() {
+  const tags = [['all','All'], ...tagOrder.filter(t=>t!=='custom').map(t=>[t,tagNames[t].split(' ')[0]])];
+  document.getElementById('quizFilters').innerHTML =
+    tags.map(([t,label]) =>
+      `<button class="filter-btn${quizTag===t?' active':''}" onclick="setQuizTag(this,'${t}')">${label}</button>`
+    ).join('');
+}
+
+function setQuizTag(btn, tag) {
+  quizTag = tag;
+  document.querySelectorAll('#quizFilters .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  startQuiz();
+}
+
+function startQuiz() {
+  const pool = SNIPPETS.filter(s => quizTag === 'all' || s.tag === quizTag);
+  quizItems = [...pool].sort(() => Math.random() - 0.5);
+  quizIdx = 0; quizCorrect = 0;
+  document.getElementById('quizEnd').classList.remove('show');
+  renderQuizCard();
+}
+
+function renderQuizCard() {
+  const total = quizItems.length;
+  document.getElementById('quizProgress').style.width = `${total ? (quizIdx/total)*100 : 0}%`;
+  document.getElementById('quizScore').textContent = `${quizCorrect} / ${quizIdx}`;
+
+  if (quizIdx >= total) {
+    document.getElementById('quizContent').innerHTML = '';
+    const pct = total ? Math.round((quizCorrect/total)*100) : 0;
+    document.getElementById('quizFinalScore').textContent = pct + '%';
+    document.getElementById('quizFinalMsg').textContent =
+      pct === 100 ? 'Perfect! You\'re a Java god. 🔥' :
+      pct >= 80   ? 'Excellent! Keep grinding! 💪' :
+      pct >= 50   ? 'Good effort. Review the misses. 📚' :
+                    'Don\'t worry, practice makes perfect. 🌱';
+    document.getElementById('quizEnd').classList.add('show');
+    return;
+  }
+
+  const item = quizItems[quizIdx];
+  document.getElementById('quizContent').innerHTML = `
+    <div class="quiz-card">
+      <div class="quiz-q-tag">${item.tag} — ${quizIdx+1} of ${total}</div>
+      <div class="quiz-question">How do you declare:<br><strong>${item.title}</strong>?</div>
+      <button class="quiz-reveal-btn" onclick="revealAnswer()">Show Answer</button>
+      <div class="quiz-answer" id="quizAnswer">
+        <code class="snippet">${item.code}</code>
+        <p style="color:var(--text-dim);font-size:12px;margin-bottom:16px;">${item.desc}</p>
+        <div class="quiz-btns">
+          <button class="quiz-btn quiz-btn-fail" onclick="quizNext(false)">✗ Missed it</button>
+          <button class="quiz-btn quiz-btn-pass" onclick="quizNext(true)">✓ Got it!</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function revealAnswer() {
+  document.getElementById('quizAnswer').classList.add('show');
+  document.querySelector('.quiz-reveal-btn').style.display = 'none';
+}
+
+function quizNext(correct) {
+  if (correct) quizCorrect++;
+  quizIdx++;
+  renderQuizCard();
+}
+
+/* ═══════════════════════════════════════════════════
+   CUSTOM SNIPPETS (protected)
+═══════════════════════════════════════════════════ */
+async function addCustomSnippet() {
+  if (!authToken) { promptLogin('Add Snippet'); return; }
+
+  const title = document.getElementById('newTitle').value.trim();
+  const tag   = document.getElementById('newTag').value;
+  const code  = document.getElementById('newCode').value.trim();
+  const desc  = document.getElementById('newDesc').value.trim();
+
+  if (!title || !code) { showToast('Title and code are required', true); return; }
+
+  const btn = document.querySelector('.submit-btn');
+  btn.innerHTML = '<span class="spinner"></span>Saving...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(API_BASE + "/snippets", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + authToken
+      },
+      body: JSON.stringify({ title, tag, code, desc })
+    });
+
+    if (res.status === 401) { handleTokenExpired(); return; }
+    if (!res.ok) throw new Error('Failed');
+
+    const data = await res.json();
+    customSnippets = Array.isArray(data) ? data : (data.snippets || []);
+
+    // Clear form
+    document.getElementById('newTitle').value = '';
+    document.getElementById('newCode').value  = '';
+    document.getElementById('newDesc').value  = '';
+
+    buildCustomSection();
+    buildCards();
+    updateCounts();
+    showToast('✓ Snippet saved!');
+  } catch (e) {
+    showToast('Could not save snippet', true);
+  } finally {
+    btn.innerHTML = 'Save Snippet';
+    btn.disabled = false;
+  }
+}
+
+async function deleteCustom(id) {
+  if (!authToken) return;
+  try {
+    const res = await fetch(API_BASE + "/snippets/" + id, {
+      method: "DELETE",
+      headers: { "Authorization": "Bearer " + authToken }
+    });
+    if (!res.ok) throw new Error('Failed');
+    const data = await res.json();
+    customSnippets = Array.isArray(data) ? data : (data.snippets || []);
+  } catch (e) {
+    // Fallback: remove locally
+    customSnippets = customSnippets.filter(s => s.id !== id);
+  }
+  buildCustomSection(); buildCards(); updateCounts();
+  showToast('Snippet deleted');
+}
+
+function buildAddPanel() {
+  const gate = document.getElementById('addGate');
+  if (!authToken) {
+    gate.innerHTML = buildLoginGate('Add Snippet', '✦');
+    // Clear the form container so it doesn't show
+    document.getElementById('panel-add').innerHTML = `<div id="addGate">${buildLoginGate('Add Snippet', '✦')}</div>`;
+    return;
+  }
+
+  document.getElementById('panel-add').innerHTML = `
+    <div id="addGate"></div>
+    <div class="add-form">
+      <h2>Add Custom Snippet</h2>
+      <p>Save your own code snippets to your account.</p>
+      <div class="form-row">
+        <label>Title</label>
+        <input type="text" id="newTitle" placeholder="e.g. Two Pointer Template">
+      </div>
+      <div class="form-row">
+        <label>Category</label>
+        <select id="newTag" style="cursor:pointer">
+          <option value="custom">Custom</option>
+          <option value="basic">Basic I/O</option>
+          <option value="array">Arrays</option>
+          <option value="list">Lists</option>
+          <option value="map">Map & Set</option>
+          <option value="stack">Stack/Queue</option>
+          <option value="tree">Tree</option>
+          <option value="graph">Graph</option>
+          <option value="sort">Sorting</option>
+          <option value="string">Strings</option>
+          <option value="bit">Bit Tricks</option>
+          <option value="dp">DP Patterns</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Code</label>
+        <textarea id="newCode" placeholder="Paste your Java snippet here..."></textarea>
+      </div>
+      <div class="form-row">
+        <label>Description (one sentence)</label>
+        <input type="text" id="newDesc" placeholder="What does this snippet do?">
+      </div>
+      <button class="submit-btn" onclick="addCustomSnippet()">Save Snippet</button>
+    </div>
+    <div class="custom-cards-section" id="customCardsSection"></div>`;
+
+  buildCustomSection();
+}
+
+function buildCustomSection() {
+  const el = document.getElementById('customCardsSection');
+  if (!el) return;
+  if (!customSnippets.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="section-title" style="margin-top:32px">Your Custom Snippets</div>
+    <div class="cards">
+      ${customSnippets.map(item => buildCard(item, true)).join('')}
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════════ */
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const btn   = document.getElementById('tab-' + name);
+  const panel = document.getElementById('panel-' + name);
+  if (btn)   btn.classList.add('active');
+  if (panel) panel.classList.add('active');
+
+  // Auto-close sidebar on mobile when switching tabs
+  if (window.innerWidth <= 900 && sidebarOpen) toggleSidebar();
+
+  if (name === 'quiz')       { buildQuizFilters(); startQuiz(); }
+  if (name === 'favorites')  { buildFavPanel(); }
+  if (name === 'complexity') { buildComplexityTable(); }
+  if (name === 'add')        { buildAddPanel(); }
+  if (name === 'snippets')   { buildCards(); }
+  if (name === 'auth')       { buildAuthPanel(); }
+}
+
+function buildAuthPanel() {
+  // If logged in, show account info; update logout section visibility
+  const logoutSec = document.getElementById('logoutSection');
+  const authForm  = document.querySelector('#panel-auth .add-form');
+  if (!logoutSec || !authForm) return;
+
+  if (authToken && currentUser) {
+    document.getElementById('loggedInEmail').textContent = currentUser;
+    logoutSec.style.display = 'block';
+    document.getElementById('authTitle').textContent = 'Your Account';
+    document.getElementById('authSubtitle').textContent = 'You are logged in.';
+    authForm.querySelector('.form-row:nth-child(3)').style.display = 'none'; // email
+    authForm.querySelector('.form-row:nth-child(4)').style.display = 'none'; // password
+    authForm.querySelector('#authBtn').style.display = 'none';
+    authForm.querySelector('p:last-of-type').style.display = 'none';
+  } else {
+    logoutSec.style.display = 'none';
+    document.getElementById('authTitle').textContent = authMode === 'login' ? 'Login' : 'Register';
+    document.getElementById('authSubtitle').textContent = 'Access your personal favorites & snippets.';
+    const rows = authForm.querySelectorAll('.form-row');
+    rows.forEach(r => r.style.display = 'block');
+    authForm.querySelector('#authBtn').style.display = 'inline-block';
+    authForm.querySelector('p:last-of-type').style.display = 'block';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   THEME
+═══════════════════════════════════════════════════ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.dataset.theme === 'dark';
+  html.dataset.theme = isDark ? 'light' : 'dark';
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('dsa_theme', html.dataset.theme);
+}
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', isError);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ═══════════════════════════════════════════════════
+   SEARCH (Ctrl+K)
+═══════════════════════════════════════════════════ */
+document.getElementById('globalSearch').addEventListener('input', function() {
+  searchQuery = this.value;
+  if (document.getElementById('panel-snippets').classList.contains('active')) buildCards();
+});
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('globalSearch').focus();
+    document.getElementById('globalSearch').select();
+  }
+});
+
+/* ═══════════════════════════════════════════════════
+   AUTH — LOGIN / REGISTER
+═══════════════════════════════════════════════════ */
+function toggleAuthMode() {
+  authMode = authMode === "login" ? "register" : "login";
+  document.getElementById("authTitle").textContent    = authMode === "login" ? "Login" : "Register";
+  document.getElementById("authBtn").textContent      = authMode === "login" ? "Login" : "Register";
+  document.getElementById("authSwitchText").textContent = authMode === "login" ? "Don't have an account?" : "Already have an account?";
+  document.getElementById("authSwitchLink").textContent = authMode === "login" ? "Register" : "Login";
+  clearAuthMessages();
+}
+
+function clearAuthMessages() {
+  const err = document.getElementById('authError');
+  const suc = document.getElementById('authSuccessMsg');
+  if (err) { err.textContent = ''; err.classList.remove('show'); }
+  if (suc) { suc.textContent = ''; suc.classList.remove('show'); }
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  if (el) { el.textContent = msg; el.classList.add('show'); }
+}
+
+function showAuthSuccess(msg) {
+  const el = document.getElementById('authSuccessMsg');
+  if (el) { el.textContent = msg; el.classList.add('show'); }
+}
+
+async function handleAuth() {
+  const email    = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  clearAuthMessages();
+
+  if (!email || !password) { showAuthError("Email and password are required."); return; }
+  if (!email.includes('@')) { showAuthError("Please enter a valid email."); return; }
+  if (password.length < 4)  { showAuthError("Password must be at least 4 characters."); return; }
+
+  const btn = document.getElementById("authBtn");
+  btn.innerHTML = '<span class="spinner"></span>' + (authMode === 'login' ? 'Logging in...' : 'Registering...');
+  btn.disabled = true;
+
+  const endpoint = authMode === "login" ? "/auth/login" : "/auth/register";
+
+  try {
+    const res = await fetch(API_BASE + endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      const errMsg = data.message || data.error || (res.status === 401 ? 'Invalid email or password.' : 'Something went wrong. Please try again.');
+      showAuthError(errMsg);
+      return;
+    }
+
+    // Success
+    authToken   = data.token;
+    currentUser = data.email || email;
+
+    localStorage.setItem('dsa_auth_token', authToken);
+    localStorage.setItem('dsa_auth_email', currentUser);
+
+    showAuthSuccess(authMode === 'login' ? `Welcome back, ${currentUser}!` : `Account created! Welcome, ${currentUser}!`);
+    showNotif(
+      authMode === 'login'
+        ? `👋 Welcome back, ${currentUser}!`
+        : `🎉 Account created! Welcome, ${currentUser}!`,
+      'success',
+      5000
+    );
+
+    // Update UI
+    document.getElementById('tab-auth').textContent = '👤 Account';
+    document.getElementById('loggedInEmail').textContent = currentUser;
+    document.getElementById('logoutSection').style.display = 'block';
+    document.getElementById('authTitle').textContent = 'Your Account';
+    document.getElementById('authSubtitle').textContent = 'You are logged in.';
+
+    // Hide form fields when logged in
+    setTimeout(() => {
+      const authForm = document.querySelector('#panel-auth .add-form');
+      if (authForm) {
+        const rows = authForm.querySelectorAll('.form-row');
+        rows.forEach(r => r.style.display = 'none');
+        document.getElementById('authBtn').style.display = 'none';
+        const switchP = authForm.querySelector('p:last-of-type');
+        if (switchP) switchP.style.display = 'none';
+      }
+    }, 800);
+
+    updateCounts();
+    await loadUserData();
+    showToast(`✓ Welcome, ${currentUser}!`);
+
+  } catch (e) {
+    showAuthError('Network error. Please check your connection and try again.');
+  } finally {
+    btn.innerHTML = authMode === 'login' ? 'Login' : 'Register';
+    btn.disabled = false;
+  }
+}
+
+function handleTokenExpired() {
+  showToast('Session expired. Please login again.', true);
+  logout(false);
+  switchTab('auth');
+}
+
+function logout(showMsg = true) {
+  authToken   = null;
+  currentUser = null;
+  favorites   = [];
+  customSnippets = [];
+
+  localStorage.removeItem('dsa_auth_token');
+  localStorage.removeItem('dsa_auth_email');
+
+  // Reset auth tab label
+  document.getElementById('tab-auth').textContent = 'Login';
+
+  // Reset auth panel state
+  const authForm = document.querySelector('#panel-auth .add-form');
+  if (authForm) {
+    const rows = authForm.querySelectorAll('.form-row');
+    rows.forEach(r => r.style.display = 'block');
+    document.getElementById('authBtn').style.display = 'inline-block';
+    const switchP = authForm.querySelector('p:last-of-type');
+    if (switchP) switchP.style.display = 'block';
+    document.getElementById('authTitle').textContent = 'Login';
+    document.getElementById('authSubtitle').textContent = 'Access your personal favorites & snippets.';
+    document.getElementById('authEmail').value = '';
+    document.getElementById('authPassword').value = '';
+    document.getElementById('logoutSection').style.display = 'none';
+    clearAuthMessages();
+  }
+
+  authMode = 'login';
+  document.getElementById('authBtn').textContent = 'Login';
+  document.getElementById('authSwitchText').textContent = "Don't have an account?";
+  document.getElementById('authSwitchLink').textContent = 'Register';
+
+  updateCounts();
+  buildCards();
+  buildFavPanel();
+  if (showMsg) {
+    showToast('Logged out successfully');
+    showNotif('👋 You\'ve been logged out.', 'info', 3500);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   LOAD USER DATA AFTER LOGIN
+═══════════════════════════════════════════════════ */
+async function loadUserData() {
+  if (!authToken) return;
+  try {
+    const [favRes, snipRes] = await Promise.all([
+      fetch(API_BASE + "/favorites",  { headers: { "Authorization": "Bearer " + authToken } }),
+      fetch(API_BASE + "/snippets",   { headers: { "Authorization": "Bearer " + authToken } })
+    ]);
+
+    if (favRes.status === 401 || snipRes.status === 401) { handleTokenExpired(); return; }
+
+    if (favRes.ok) {
+      const favData = await favRes.json();
+      favorites = Array.isArray(favData) ? favData : (favData.favorites || []);
+    }
+
+    if (snipRes.ok) {
+      const snipData = await snipRes.json();
+      customSnippets = Array.isArray(snipData) ? snipData : (snipData.snippets || []);
+    }
+
+    updateCounts();
+    buildCards();
+    buildCustomSection();
+    buildFavPanel();
+
+  } catch (e) {
+    console.warn('Could not load user data:', e);
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+(async function init() {
+  const savedTheme = localStorage.getItem('dsa_theme') || 'dark';
+  document.documentElement.dataset.theme = savedTheme;
+  document.getElementById('themeBtn').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+
+  buildFilterChips();
+  buildCards();
+  updateCounts();
+
+  // Auto-login if token exists
+  if (authToken && currentUser) {
+    document.getElementById('tab-auth').textContent = '👤 Account';
+    await loadUserData();
+    showNotif(`👋 Welcome back, ${currentUser}!`, 'info', 4000);
+  }
+})();
+</script>
+</body>
+</html>
