@@ -62,7 +62,7 @@ Authentication is handled by the backend. On login/register:
 
 ## ⚙️ Backend
 
-This frontend connects to a Spring Boot backend. See the [backend repo](#https://github.com/ShanmuSetty/JavaCheatsheet_Backend).
+This frontend connects to a Spring Boot backend. See the [backend repo](https://github.com/ShanmuSetty/JavaCheatsheet_Backend).
 
 **API Base URL** (configured in `script.js`):
 ```
