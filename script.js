@@ -1,13 +1,15 @@
 /* ═══════════════════════════════════════════════════
    SIDEBAR TOGGLE
 ═══════════════════════════════════════════════════ */
+let sidebarOpen = true; // track sidebar state
+
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
   const btn = document.getElementById('menuToggleBtn');
   const overlay = document.getElementById('sidebarOverlay');
-  const collapsed = sidebar.classList.toggle('collapsed');
-  btn.classList.toggle('active', !collapsed);
-  if (overlay) overlay.classList.toggle('show', !collapsed);
+  sidebarOpen = !sidebar.classList.toggle('collapsed');
+  btn.classList.toggle('active', sidebarOpen);
+  if (overlay) overlay.classList.toggle('show', sidebarOpen);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -23,7 +25,7 @@ function showNotif(msg, type = 'success', duration = 4500) {
   text.textContent = msg;
   icon.textContent = icons[type] || '✓';
   banner.classList.remove('show');
-  void banner.offsetWidth; // force reflow for re-animation
+  void banner.offsetWidth;
   banner.classList.add('show');
   clearTimeout(notifTimer);
   notifTimer = setTimeout(hideNotif, duration);
@@ -101,7 +103,7 @@ const SNIPPETS = [
 
   { id:'l3', tag:'list', title:'Adjacency List (graph)',
     desc:'Standard graph representation using a list of lists.',
-    code:`<span class="cls">ArrayList</span>&lt;<span class="cls">ArrayList</span>&lt;<span class="cls">Integer</span>&gt;&gt; adj =\n    <span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;();\n<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++)\n    adj.<span class="fn">add</span>(<span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;());\nadj.<span class="fn">get</span>(u).<span class="fn">add</span>(v);\nadj.<span class="fn">get</span>(v).<span class="fn">add</span>(u); <span class="cmt">// undirected</span>` },
+    code:`<span class="cls">ArrayList</span>&lt;<span class="cls">ArrayList</span>&lt;<span class="cls">Integer</span>&gt;&gt; adj =\n    <span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;();\n<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i < n; i++)\n    adj.<span class="fn">add</span>(<span class="kw">new</span> <span class="cls">ArrayList</span>&lt;&gt;());\nadj.<span class="fn">get</span>(u).<span class="fn">add</span>(v);\nadj.<span class="fn">get</span>(v).<span class="fn">add</span>(u); <span class="cmt">// undirected</span>` },
 
   // ── MAP / SET ─────────────────────────────────
   { id:'m1', tag:'map', title:'HashMap',
@@ -356,25 +358,19 @@ function updateCounts() {
   badge.textContent = favorites.length;
   badge.classList.toggle('show', favorites.length > 0);
 
-  // Update lock icons
   const isLoggedIn = !!authToken;
   const addLock = document.getElementById('addLockIcon');
   const favLock = document.getElementById('favLockIcon');
   if (addLock) addLock.style.display = isLoggedIn ? 'none' : 'inline';
   if (favLock) favLock.style.display = isLoggedIn ? 'none' : 'inline';
 
-  // Update user pill
   updateUserPill();
 
-  // Show/hide topbar logout button
   const logoutBtn = document.getElementById('logoutTopbarBtn');
   if (logoutBtn) logoutBtn.classList.toggle('visible', !!authToken);
 
-  // Update auth tab label
   const authTab = document.getElementById('tab-auth');
   if (authTab) authTab.textContent = isLoggedIn ? '👤 Account' : 'Login';
-  const authNavBtn = document.getElementById('authNavBtn');
-  if (authNavBtn) authNavBtn.querySelector('span:not(.dot)') && (authNavBtn.lastChild.textContent = isLoggedIn ? ' Account' : ' Login / Register');
 }
 
 function updateUserPill() {
@@ -411,7 +407,7 @@ function buildCard(item, showDelete = false) {
   const isFav = favorites.includes(item.id);
   const cnt   = copyCounts[item.id] || 0;
   const favBtn = authToken
-    ? `<button class="small-btn${isFav ? ' active-fav' : ''}" onclick="toggleFav('${item.id}')" title="Favorite">★</button>`
+    ? `<button class="small-btn${isFav ? ' active-fav' : ''}" onclick="toggleFav('${item.id}')" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">★</button>`
     : `<button class="small-btn" onclick="promptLogin('favorites')" title="Login to favorite" style="opacity:0.4">★</button>`;
 
   const deleteBtn = showDelete
@@ -491,7 +487,10 @@ function setNavActive(btn, tag) {
   buildCards();
   switchTab('snippets');
   // Auto-close sidebar on mobile
-  if (window.innerWidth <= 900 && sidebarOpen) toggleSidebar();
+  if (window.innerWidth <= 768) {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar.classList.contains('collapsed')) toggleSidebar();
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -531,9 +530,13 @@ function buildLoginGate(featureName, icon) {
 
 /* ═══════════════════════════════════════════════════
    FAVORITES (protected)
+   FIX: capture the pre-toggle state to determine toast message
 ═══════════════════════════════════════════════════ */
 async function toggleFav(id) {
   if (!authToken) { promptLogin('favorites'); return; }
+
+  // Capture current state BEFORE the API call
+  const wasAlreadyFavorited = favorites.includes(id);
 
   try {
     const res = await fetch(API_BASE + "/favorites/" + id, {
@@ -545,11 +548,15 @@ async function toggleFav(id) {
     if (!res.ok) throw new Error('Failed');
 
     const data = await res.json();
+    // Handle both response shapes: plain array or {favorites: [...]}
     favorites = Array.isArray(data) ? data : (data.favorites || []);
+
     updateCounts();
     buildCards();
     buildFavPanel();
-    showToast(favorites.includes(id) ? '★ Added to favorites' : '☆ Removed from favorites');
+
+    // Use pre-toggle state for accurate message
+    showToast(wasAlreadyFavorited ? '☆ Removed from favorites' : '★ Added to favorites');
   } catch (e) {
     showToast('Could not update favorite', true);
   }
@@ -676,7 +683,6 @@ async function addCustomSnippet() {
     const data = await res.json();
     customSnippets = Array.isArray(data) ? data : (data.snippets || []);
 
-    // Clear form
     document.getElementById('newTitle').value = '';
     document.getElementById('newCode').value  = '';
     document.getElementById('newDesc').value  = '';
@@ -704,7 +710,6 @@ async function deleteCustom(id) {
     const data = await res.json();
     customSnippets = Array.isArray(data) ? data : (data.snippets || []);
   } catch (e) {
-    // Fallback: remove locally
     customSnippets = customSnippets.filter(s => s.id !== id);
   }
   buildCustomSection(); buildCards(); updateCounts();
@@ -712,15 +717,13 @@ async function deleteCustom(id) {
 }
 
 function buildAddPanel() {
-  const gate = document.getElementById('addGate');
+  const panelEl = document.getElementById('panel-add');
   if (!authToken) {
-    gate.innerHTML = buildLoginGate('Add Snippet', '✦');
-    // Clear the form container so it doesn't show
-    document.getElementById('panel-add').innerHTML = `<div id="addGate">${buildLoginGate('Add Snippet', '✦')}</div>`;
+    panelEl.innerHTML = `<div id="addGate">${buildLoginGate('Add Snippet', '✦')}</div>`;
     return;
   }
 
-  document.getElementById('panel-add').innerHTML = `
+  panelEl.innerHTML = `
     <div id="addGate"></div>
     <div class="add-form">
       <h2>Add Custom Snippet</h2>
@@ -774,6 +777,8 @@ function buildCustomSection() {
 
 /* ═══════════════════════════════════════════════════
    TABS
+   FIX: removed the reference to undefined `sidebarOpen` variable
+        that was crashing switchTab() on mobile
 ═══════════════════════════════════════════════════ */
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -784,7 +789,10 @@ function switchTab(name) {
   if (panel) panel.classList.add('active');
 
   // Auto-close sidebar on mobile when switching tabs
-  if (window.innerWidth <= 900 && sidebarOpen) toggleSidebar();
+  if (window.innerWidth <= 768) {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar && !sidebar.classList.contains('collapsed')) toggleSidebar();
+  }
 
   if (name === 'quiz')       { buildQuizFilters(); startQuiz(); }
   if (name === 'favorites')  { buildFavPanel(); }
@@ -794,8 +802,12 @@ function switchTab(name) {
   if (name === 'auth')       { buildAuthPanel(); }
 }
 
+/* ═══════════════════════════════════════════════════
+   AUTH PANEL
+   FIX: re-render panel fully based on current auth state
+        so logout persists correctly after reload
+═══════════════════════════════════════════════════ */
 function buildAuthPanel() {
-  // If logged in, show account info; update logout section visibility
   const logoutSec = document.getElementById('logoutSection');
   const authForm  = document.querySelector('#panel-auth .add-form');
   if (!logoutSec || !authForm) return;
@@ -805,18 +817,21 @@ function buildAuthPanel() {
     logoutSec.style.display = 'block';
     document.getElementById('authTitle').textContent = 'Your Account';
     document.getElementById('authSubtitle').textContent = 'You are logged in.';
-    authForm.querySelector('.form-row:nth-child(3)').style.display = 'none'; // email
-    authForm.querySelector('.form-row:nth-child(4)').style.display = 'none'; // password
-    authForm.querySelector('#authBtn').style.display = 'none';
-    authForm.querySelector('p:last-of-type').style.display = 'none';
+    // Hide login-specific elements
+    authForm.querySelectorAll('.form-row').forEach(r => r.style.display = 'none');
+    const authBtn = document.getElementById('authBtn');
+    if (authBtn) authBtn.style.display = 'none';
+    const switchP = authForm.querySelector('p:last-of-type');
+    if (switchP) switchP.style.display = 'none';
   } else {
     logoutSec.style.display = 'none';
     document.getElementById('authTitle').textContent = authMode === 'login' ? 'Login' : 'Register';
     document.getElementById('authSubtitle').textContent = 'Access your personal favorites & snippets.';
-    const rows = authForm.querySelectorAll('.form-row');
-    rows.forEach(r => r.style.display = 'block');
-    authForm.querySelector('#authBtn').style.display = 'inline-block';
-    authForm.querySelector('p:last-of-type').style.display = 'block';
+    authForm.querySelectorAll('.form-row').forEach(r => r.style.display = 'block');
+    const authBtn = document.getElementById('authBtn');
+    if (authBtn) { authBtn.style.display = 'inline-block'; authBtn.textContent = authMode === 'login' ? 'Login' : 'Register'; }
+    const switchP = authForm.querySelector('p:last-of-type');
+    if (switchP) switchP.style.display = 'block';
   }
 }
 
@@ -845,7 +860,7 @@ function showToast(msg, isError = false) {
 }
 
 /* ═══════════════════════════════════════════════════
-   SEARCH (Ctrl+K)
+   SEARCH
 ═══════════════════════════════════════════════════ */
 document.getElementById('globalSearch').addEventListener('input', function() {
   searchQuery = this.value;
@@ -919,7 +934,6 @@ async function handleAuth() {
       return;
     }
 
-    // Success
     authToken   = data.token;
     currentUser = data.email || email;
 
@@ -931,30 +945,11 @@ async function handleAuth() {
       authMode === 'login'
         ? `👋 Welcome back, ${currentUser}!`
         : `🎉 Account created! Welcome, ${currentUser}!`,
-      'success',
-      5000
+      'success', 5000
     );
 
-    // Update UI
-    document.getElementById('tab-auth').textContent = '👤 Account';
-    document.getElementById('loggedInEmail').textContent = currentUser;
-    document.getElementById('logoutSection').style.display = 'block';
-    document.getElementById('authTitle').textContent = 'Your Account';
-    document.getElementById('authSubtitle').textContent = 'You are logged in.';
-
-    // Hide form fields when logged in
-    setTimeout(() => {
-      const authForm = document.querySelector('#panel-auth .add-form');
-      if (authForm) {
-        const rows = authForm.querySelectorAll('.form-row');
-        rows.forEach(r => r.style.display = 'none');
-        document.getElementById('authBtn').style.display = 'none';
-        const switchP = authForm.querySelector('p:last-of-type');
-        if (switchP) switchP.style.display = 'none';
-      }
-    }, 800);
-
     updateCounts();
+    buildAuthPanel(); // re-render auth panel to show logged-in state
     await loadUserData();
     showToast(`✓ Welcome, ${currentUser}!`);
 
@@ -981,33 +976,38 @@ function logout(showMsg = true) {
   localStorage.removeItem('dsa_auth_token');
   localStorage.removeItem('dsa_auth_email');
 
-  // Reset auth tab label
-  document.getElementById('tab-auth').textContent = 'Login';
+  authMode = 'login';
 
-  // Reset auth panel state
-  const authForm = document.querySelector('#panel-auth .add-form');
+  // Reset auth tab label
+  const authTab = document.getElementById('tab-auth');
+  if (authTab) authTab.textContent = 'Login';
+
+  // Reset auth panel to login form
+  const logoutSec = document.getElementById('logoutSection');
+  const authForm  = document.querySelector('#panel-auth .add-form');
   if (authForm) {
-    const rows = authForm.querySelectorAll('.form-row');
-    rows.forEach(r => r.style.display = 'block');
-    document.getElementById('authBtn').style.display = 'inline-block';
+    authForm.querySelectorAll('.form-row').forEach(r => r.style.display = 'block');
+    const authBtn = document.getElementById('authBtn');
+    if (authBtn) { authBtn.style.display = 'inline-block'; authBtn.textContent = 'Login'; }
     const switchP = authForm.querySelector('p:last-of-type');
     if (switchP) switchP.style.display = 'block';
     document.getElementById('authTitle').textContent = 'Login';
     document.getElementById('authSubtitle').textContent = 'Access your personal favorites & snippets.';
-    document.getElementById('authEmail').value = '';
-    document.getElementById('authPassword').value = '';
-    document.getElementById('logoutSection').style.display = 'none';
+    const emailEl = document.getElementById('authEmail');
+    const passEl  = document.getElementById('authPassword');
+    if (emailEl) emailEl.value = '';
+    if (passEl)  passEl.value = '';
     clearAuthMessages();
   }
+  if (logoutSec) logoutSec.style.display = 'none';
 
-  authMode = 'login';
-  document.getElementById('authBtn').textContent = 'Login';
   document.getElementById('authSwitchText').textContent = "Don't have an account?";
   document.getElementById('authSwitchLink').textContent = 'Register';
 
   updateCounts();
   buildCards();
   buildFavPanel();
+
   if (showMsg) {
     showToast('Logged out successfully');
     showNotif('👋 You\'ve been logged out.', 'info', 3500);
@@ -1048,25 +1048,24 @@ async function loadUserData() {
 }
 
 /* ═══════════════════════════════════════════════════
-   INIT
+   SHOW / HIDE PASSWORD
+   FIX: new feature added
 ═══════════════════════════════════════════════════ */
-(async function init() {
-  const savedTheme = localStorage.getItem('dsa_theme') || 'dark';
-  document.documentElement.dataset.theme = savedTheme;
-  document.getElementById('themeBtn').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
-
-  buildFilterChips();
-  buildCards();
-  updateCounts();
-
-  // Auto-login if token exists
-  if (authToken && currentUser) {
-    document.getElementById('tab-auth').textContent = '👤 Account';
-    await loadUserData();
-    showNotif(`👋 Welcome back, ${currentUser}!`, 'info', 4000);
+function togglePassVis() {
+  const input = document.getElementById('authPassword');
+  const eye   = document.getElementById('passToggleEye');
+  if (input.type === 'password') {
+    input.type = 'text';
+    eye.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    eye.textContent = '👁';
   }
-})();
+}
 
+/* ═══════════════════════════════════════════════════
+   MOBILE SEARCH TOGGLE
+═══════════════════════════════════════════════════ */
 function toggleMobileSearch() {
   const search = document.querySelector('.topbar-search');
   const btn = document.getElementById('searchToggleBtn');
@@ -1074,3 +1073,34 @@ function toggleMobileSearch() {
   btn.classList.toggle('active', isOpen);
   if (isOpen) document.getElementById('globalSearch').focus();
 }
+
+/* ═══════════════════════════════════════════════════
+   INIT
+   FIX: call buildAuthPanel() on load so logout state
+        is correctly reflected after a page reload
+═══════════════════════════════════════════════════ */
+(async function init() {
+  const savedTheme = localStorage.getItem('dsa_theme') || 'dark';
+  document.documentElement.dataset.theme = savedTheme;
+  document.getElementById('themeBtn').textContent = savedTheme === 'dark' ? '🌙' : '☀️';
+
+  // Start sidebar as open on desktop, closed on mobile
+  sidebarOpen = window.innerWidth > 768;
+  const sidebar = document.getElementById('sidebar');
+  const menuBtn = document.getElementById('menuToggleBtn');
+  if (!sidebarOpen) {
+    sidebar.classList.add('collapsed');
+    menuBtn.classList.remove('active');
+  }
+
+  buildFilterChips();
+  buildCards();
+  updateCounts();
+
+  // Restore auth UI state on reload
+  if (authToken && currentUser) {
+    buildAuthPanel(); // show logged-in state in auth panel
+    await loadUserData();
+    showNotif(`👋 Welcome back, ${currentUser}!`, 'info', 4000);
+  }
+})();
